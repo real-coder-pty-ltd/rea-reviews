@@ -50,10 +50,13 @@ class Rcreviews_Admin {
 	public function __construct( $plugin_name, $version ) {
 
 		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+		$this->version     = $version;
 
 		//Register custom post types
-		add_action('init', array( $this, 'register_custom_post_types' ));
+		add_action( 'init', array( $this, 'register_custom_post_types' ) );
+
+		//Register custom taxonomies
+		add_action( 'init', array( $this, 'register_custom_taxonomies' ) );
 
 	}
 
@@ -105,7 +108,7 @@ class Rcreviews_Admin {
 
 	// Register Custom Post Types
 	public function register_custom_post_types() {
-	
+
 		$labels = array(
 			'name'                  => _x( 'Reviews', 'Post Type General Name', 'text_domain' ),
 			'singular_name'         => _x( 'Review', 'Post Type Singular Name', 'text_domain' ),
@@ -135,28 +138,101 @@ class Rcreviews_Admin {
 			'items_list_navigation' => __( 'Reviews list navigation', 'text_domain' ),
 			'filter_items_list'     => __( 'Filter Reviews list', 'text_domain' ),
 		);
-		$args = array(
-			'label'                 => __( 'Review', 'text_domain' ),
-			'description'           => __( 'Post Type DescriptionSync Reviews from realestate.com.au to WordPress.', 'text_domain' ),
-			'labels'                => $labels,
-			'supports'              => array( 'title', 'editor', 'custom-fields', 'page-attributes' ),
-			'taxonomies'            => array( 'suburb', 'state' ),
-			'hierarchical'          => false,
-			'public'                => true,
-			'show_ui'               => true,
-			'show_in_menu'          => true,
-			'menu_position'         => 5,
-			'menu_icon'             => 'dashicons-format-quote',
-			'show_in_admin_bar'     => false,
-			'show_in_nav_menus'     => false,
-			'can_export'            => true,
-			'has_archive'           => false,
-			'exclude_from_search'   => true,
-			'publicly_queryable'    => true,
-			'rewrite'               => false,
-			'capability_type'       => 'post',
+		$args   = array(
+			'label'               => __( 'Review', 'text_domain' ),
+			'description'         => __( 'Post Type DescriptionSync Reviews from realestate.com.au to WordPress.', 'text_domain' ),
+			'labels'              => $labels,
+			'supports'            => array( 'title', 'editor', 'custom-fields', 'page-attributes' ),
+			'taxonomies'          => array( 'suburb', 'state' ),
+			'hierarchical'        => false,
+			'public'              => true,
+			'show_ui'             => true,
+			'show_in_menu'        => true,
+			'menu_position'       => 5,
+			'menu_icon'           => 'dashicons-format-quote',
+			'show_in_admin_bar'   => false,
+			'show_in_nav_menus'   => false,
+			'can_export'          => true,
+			'has_archive'         => false,
+			'exclude_from_search' => true,
+			'publicly_queryable'  => true,
+			'rewrite'             => false,
+			'capability_type'     => 'post',
 		);
 		register_post_type( 'rcreviews', $args );
+
+	}
+
+	// Register Custom Taxonomies
+	function register_custom_taxonomies() {
+
+		$labels_suburb = array(
+			'name'                       => _x( 'Suburbs', 'Taxonomy General Name', 'text_domain' ),
+			'singular_name'              => _x( 'Suburb', 'Taxonomy Singular Name', 'text_domain' ),
+			'menu_name'                  => __( 'Suburbs', 'text_domain' ),
+			'all_items'                  => __( 'Suburbs', 'text_domain' ),
+			'parent_item'                => __( 'Parent Suburb', 'text_domain' ),
+			'parent_item_colon'          => __( 'Parent Suburb:', 'text_domain' ),
+			'new_item_name'              => __( 'New Suburb', 'text_domain' ),
+			'add_new_item'               => __( 'Add New Suburb', 'text_domain' ),
+			'edit_item'                  => __( 'Edit Suburb', 'text_domain' ),
+			'update_item'                => __( 'Update Suburb', 'text_domain' ),
+			'view_item'                  => __( 'View Suburb', 'text_domain' ),
+			'separate_items_with_commas' => __( 'Separate suburbs with commas', 'text_domain' ),
+			'add_or_remove_items'        => __( 'Add or remove suburbs', 'text_domain' ),
+			'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+			'popular_items'              => __( 'Popular Suburbs', 'text_domain' ),
+			'search_items'               => __( 'Search Suburbs', 'text_domain' ),
+			'not_found'                  => __( 'Not Found', 'text_domain' ),
+			'no_terms'                   => __( 'No suburbs', 'text_domain' ),
+			'items_list'                 => __( 'Suburbs list', 'text_domain' ),
+			'items_list_navigation'      => __( 'Suburbs list navigation', 'text_domain' ),
+		);
+		$args_suburb   = array(
+			'labels'            => $labels_suburb,
+			'hierarchical'      => false,
+			'public'            => true,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'show_in_nav_menus' => false,
+			'show_tagcloud'     => true,
+			'rewrite'           => false,
+		);
+		$labels_state = array(
+			'name'                       => _x( 'States', 'Taxonomy General Name', 'text_domain' ),
+			'singular_name'              => _x( 'State', 'Taxonomy Singular Name', 'text_domain' ),
+			'menu_name'                  => __( 'States', 'text_domain' ),
+			'all_items'                  => __( 'States', 'text_domain' ),
+			'parent_item'                => __( 'Parent State', 'text_domain' ),
+			'parent_item_colon'          => __( 'Parent State:', 'text_domain' ),
+			'new_item_name'              => __( 'New State', 'text_domain' ),
+			'add_new_item'               => __( 'Add New State', 'text_domain' ),
+			'edit_item'                  => __( 'Edit State', 'text_domain' ),
+			'update_item'                => __( 'Update State', 'text_domain' ),
+			'view_item'                  => __( 'View State', 'text_domain' ),
+			'separate_items_with_commas' => __( 'Separate states with commas', 'text_domain' ),
+			'add_or_remove_items'        => __( 'Add or remove states', 'text_domain' ),
+			'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+			'popular_items'              => __( 'Popular States', 'text_domain' ),
+			'search_items'               => __( 'Search States', 'text_domain' ),
+			'not_found'                  => __( 'Not Found', 'text_domain' ),
+			'no_terms'                   => __( 'No states', 'text_domain' ),
+			'items_list'                 => __( 'States list', 'text_domain' ),
+			'items_list_navigation'      => __( 'States list navigation', 'text_domain' ),
+		);
+		$args_state   = array(
+			'labels'            => $labels_state,
+			'hierarchical'      => false,
+			'public'            => true,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'show_in_nav_menus' => false,
+			'show_tagcloud'     => true,
+			'rewrite'           => false,
+		);
+		register_taxonomy( 'suburb', array( 'rcreviews' ), $args_suburb );
+		register_taxonomy( 'state', array( 'rcreviews' ), $args_state );
+
 	}
 
 }
