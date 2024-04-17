@@ -52,11 +52,14 @@ class Rcreviews_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 
-		//Register custom post types
+		// Register custom post types
 		add_action( 'init', array( $this, 'register_custom_post_types' ) );
 
-		//Register custom taxonomies
+		// Register custom taxonomies
 		add_action( 'init', array( $this, 'register_custom_taxonomies' ) );
+
+		// Add the admin menu
+		add_action('admin_menu', array( $this, 'display_plugin_admin_menu' ), 9);
 
 	}
 
@@ -233,6 +236,14 @@ class Rcreviews_Admin {
 		register_taxonomy( 'suburb', array( 'rcreviews' ), $args_suburb );
 		register_taxonomy( 'state', array( 'rcreviews' ), $args_state );
 
+	}
+
+	public function display_plugin_admin_menu() {
+		add_menu_page( 'RC Reviews', 'RC Reviews', 'administrator', $this->plugin_name, array( $this, 'display_plugin_admin_dashboard' ), 'dashicons-star-filled', 26 );
+	}
+
+	public function display_plugin_admin_dashboard() {
+		require_once 'partials/rcreviews-admin-display.php';
 	}
 
 }
