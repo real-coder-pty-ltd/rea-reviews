@@ -152,7 +152,7 @@ class Rcreviews_Admin {
 			'description'         => __( 'Post Type DescriptionSync Reviews from realestate.com.au to WordPress.', 'text_domain' ),
 			'labels'              => $labels,
 			'supports'            => array( 'title', 'editor', 'custom-fields', 'page-attributes' ),
-			'taxonomies'          => array( 'suburb', 'state' ),
+			'taxonomies'          => array( 'rcreviews_suburb', 'rcreviews_state' ),
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,
@@ -239,8 +239,8 @@ class Rcreviews_Admin {
 			'show_tagcloud'     => true,
 			'rewrite'           => false,
 		);
-		register_taxonomy( 'suburb', array( 'rcreviews' ), $args_suburb );
-		register_taxonomy( 'state', array( 'rcreviews' ), $args_state );
+		register_taxonomy( 'rcreviews_suburb', array( 'rcreviews' ), $args_suburb );
+		register_taxonomy( 'rcreviews_state', array( 'rcreviews' ), $args_state );
 
 	}
 
