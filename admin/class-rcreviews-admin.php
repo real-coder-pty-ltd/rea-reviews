@@ -58,6 +58,9 @@ class Rcreviews_Admin {
 		// Register custom taxonomies
 		add_action( 'init', array( $this, 'register_custom_taxonomies' ) );
 
+		// Register meta boxes
+		add_action( 'init', array( $this, 'register_meta_boxes' ) );
+
 		// Add the admin menu
 		add_action( 'admin_menu', array( $this, 'display_plugin_admin_menu' ), 9 );
 
@@ -148,7 +151,7 @@ class Rcreviews_Admin {
 			'label'               => __( 'Review', 'text_domain' ),
 			'description'         => __( 'Post Type DescriptionSync Reviews from realestate.com.au to WordPress.', 'text_domain' ),
 			'labels'              => $labels,
-			'supports'            => array( 'title', 'editor', 'custom-fields', 'page-attributes' ),
+			'supports'            => array( 'title', 'editor', 'page-attributes' ),
 			'taxonomies'          => array( 'rcreviews_suburb', 'rcreviews_state' ),
 			'hierarchical'        => false,
 			'public'              => true,
@@ -239,6 +242,93 @@ class Rcreviews_Admin {
 		register_taxonomy( 'rcreviews_state', array( 'rcreviews' ), $args_state );
 	}
 
+	// Register Meta Boxes
+	function register_meta_boxes() {
+
+		function rcreviews_add_meta_boxes() {
+
+			add_meta_box(
+				'rcreview_reviewer_rating',
+				'Review Rating',
+				'rcreviews_reviewer_rating_callback',
+				'rcreviews' 
+			);
+			add_meta_box(
+				'rcreview_reviewer_role',
+				'Reviewer Role',
+				'rcreviews_reviewer_role_callback',
+				'rcreviews' 
+			);
+			add_meta_box(
+				'rcreview_reviewer_name',
+				'Reviewer Name',
+				'rcreviews_reviewer_name_callback',
+				'rcreviews' 
+			);
+			add_meta_box(
+				'rcreview_agent_id',
+				'Agent ID',
+				'rcreviews_agent_id_callback',
+				'rcreviews' 
+			);
+			add_meta_box(
+				'rcreview_agent_name',
+				'Agent Name',
+				'rcreviews_agent_name_callback',
+				'rcreviews' 
+			);
+		}
+		add_action('add_meta_boxes', 'rcreviews_add_meta_boxes');
+
+		function rcreviews_reviewer_rating_callback( $post ) {
+			$value = esc_html( get_post_meta( $post->ID, 'rcreview_reviewer_rating', true ) );
+			echo '<input type="text" name="rcreview_reviewer_rating" id="rcreview_reviewer_rating" value="' . $value . '">';
+		}
+		function rcreviews_reviewer_role_callback( $post ) {
+			$value = esc_html( get_post_meta( $post->ID, 'rcreview_reviewer_role', true ) );
+			echo '<input type="text" name="rcreview_reviewer_role" id="rcreview_reviewer_role" value="' . $value . '">';
+		}
+		function rcreviews_reviewer_name_callback( $post ) {
+			$value = esc_html( get_post_meta( $post->ID, 'rcreview_reviewer_name', true ) );
+			echo '<input type="text" name="rcreview_reviewer_name" id="rcreview_reviewer_name" value="' . $value . '">';
+		}
+		function rcreviews_agent_id_callback( $post ) {
+			$value = esc_html( get_post_meta( $post->ID, 'rcreview_agent_id', true ) );
+			echo '<input type="text" name="rcreview_agent_id" id="rcreview_agent_id" value="' . $value . '">';
+		}
+		function rcreviews_agent_name_callback( $post ) {
+			$value = esc_html( get_post_meta( $post->ID, 'rcreview_agent_name', true ) );
+			echo '<input type="text" name="rcreview_agent_name" id="rcreview_agent_name" value="' . $value . '">';
+		}
+
+		function save_post_rcreviews_meta_boxes( $post_id ) {
+			if ( !current_user_can( 'edit_post', $post_id )){
+				return;
+			}
+			if ( 'rcreviews' == get_post_type() ) {
+				if ( isset( $_POST['rcreview_reviewer_rating'] ) && $_POST['rcreview_reviewer_rating'] != '' ) {
+					update_post_meta( $post_id, 'rcreview_reviewer_rating', $_POST['rcreview_reviewer_rating'] );
+				}
+				if ( isset( $_POST['rcreview_reviewer_role'] ) && $_POST['rcreview_reviewer_role'] != '' ) {
+					update_post_meta( $post_id, 'rcreview_reviewer_role', $_POST['rcreview_reviewer_role'] );
+				}
+
+				if ( isset( $_POST['rcreview_reviewer_name'] ) && $_POST['rcreview_reviewer_name'] != '' ) {
+					update_post_meta( $post_id, 'rcreview_reviewer_name', $_POST['rcreview_reviewer_name'] );
+				}
+
+				if ( isset( $_POST['rcreview_agent_id'] ) && $_POST['rcreview_agent_id'] != '' ) {
+					update_post_meta( $post_id, 'rcreview_agent_id', $_POST['rcreview_agent_id'] );
+				}
+
+				if ( isset( $_POST['rcreview_agent_name'] ) && $_POST['rcreview_agent_name'] != '' ) {
+					update_post_meta( $post_id, 'rcreview_agent_name', $_POST['rcreview_agent_name'] );
+				}
+			}
+		}
+		add_action( 'save_post', 'save_post_rcreviews_meta_boxes' );
+	}
+
 	public function display_plugin_admin_menu() {
 		// add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
 		add_menu_page( $this->plugin_name, 'RC Reviews', 'administrator', $this->plugin_name, array( $this, 'display_plugin_admin_dashboard' ), 'dashicons-star-filled', 26 );
@@ -288,7 +378,7 @@ class Rcreviews_Admin {
 			// Title to be displayed on the administration page
 			'Client Credentials',
 			// Callback used to render the description of the section
-			array( $this, 'rcreviews_display_settings_account' ),
+			array( $this, 'rcreviews_settings_account' ),
 			// Page on which to add this section of options
 			'rcreviews_settings'
 		);
@@ -440,7 +530,7 @@ class Rcreviews_Admin {
 		}
 	}
 
-	public function rcreviews_display_settings_account() {
+	public function rcreviews_settings_account() {
 		echo '<p>Please add the correct API credentials on .env file.</p>';
 	}
 	public function rcreviews_render_settings_field( $args ) {
