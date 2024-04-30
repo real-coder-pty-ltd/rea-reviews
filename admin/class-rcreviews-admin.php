@@ -44,8 +44,8 @@ class Rcreviews_Admin {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of this plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
 
@@ -66,7 +66,6 @@ class Rcreviews_Admin {
 
 		// Register default values for settings field
 		add_action( 'admin_init', array( $this, 'register_default_values_for_settings_field' ) );
-
 	}
 
 	/**
@@ -89,7 +88,6 @@ class Rcreviews_Admin {
 		 */
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/rcreviews-admin.css', array(), $this->version, 'all' );
-
 	}
 
 	/**
@@ -112,7 +110,6 @@ class Rcreviews_Admin {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/rcreviews-admin.js', array( 'jquery' ), $this->version, false );
-
 	}
 
 	// Register Custom Post Types
@@ -169,7 +166,6 @@ class Rcreviews_Admin {
 			'capability_type'     => 'post',
 		);
 		register_post_type( 'rcreviews', $args );
-
 	}
 
 	// Register Custom Taxonomies
@@ -241,14 +237,13 @@ class Rcreviews_Admin {
 		);
 		register_taxonomy( 'rcreviews_suburb', array( 'rcreviews' ), $args_suburb );
 		register_taxonomy( 'rcreviews_state', array( 'rcreviews' ), $args_state );
-
 	}
 
 	public function display_plugin_admin_menu() {
-		//add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
+		// add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
 		add_menu_page( $this->plugin_name, 'RC Reviews', 'administrator', $this->plugin_name, array( $this, 'display_plugin_admin_dashboard' ), 'dashicons-star-filled', 26 );
 
-		//add_submenu_page( '$parent_slug, $page_title, $menu_title, $capability, $menu_slug, $function );
+		// add_submenu_page( '$parent_slug, $page_title, $menu_title, $capability, $menu_slug, $function );
 		add_submenu_page( $this->plugin_name, 'RC Reviews Settings', 'Settings', 'administrator', $this->plugin_name . '-settings', array( $this, 'display_plugin_admin_settings' ) );
 	}
 
@@ -268,8 +263,8 @@ class Rcreviews_Admin {
 	public function rcreviews_settings_messages( $error_message ) {
 		switch ( $error_message ) {
 			case '1':
-				$message = __( 'There was an error adding this setting. Please try again.  If this persists, shoot us an email.', 'my-text-domain' );
-				$err_code = esc_attr( 'rcreviews_example_setting' );
+				$message       = __( 'There was an error adding this setting. Please try again.  If this persists, shoot us an email.', 'my-text-domain' );
+				$err_code      = esc_attr( 'rcreviews_example_setting' );
 				$setting_field = 'rcreviews_example_setting';
 				break;
 		}
@@ -300,12 +295,16 @@ class Rcreviews_Admin {
 
 		$disabled_id     = '';
 		$disabled_secret = '';
+		$disabled_agent  = '';
 
 		if ( getenv( 'REA_CLIENT_ID' ) ) {
 			$disabled_id = 'disabled';
 		}
 		if ( getenv( 'REA_CLIENT_SECRET' ) ) {
 			$disabled_secret = 'disabled';
+		}
+		if ( getenv( 'REA_AGENCY_ID' ) ) {
+			$disabled_agent = 'disabled';
 		}
 
 		add_settings_field(
@@ -326,6 +325,10 @@ class Rcreviews_Admin {
 				'wp_data'          => 'option',
 			),
 		);
+		register_setting(
+			'rcreviews_settings',
+			'rcreviews_client_id'
+		);
 
 		add_settings_field(
 			'rcreviews_client_secret',
@@ -344,6 +347,10 @@ class Rcreviews_Admin {
 				'value_type'       => 'normal',
 				'wp_data'          => 'option',
 			),
+		);
+		register_setting(
+			'rcreviews_settings',
+			'rcreviews_client_secret'
 		);
 
 		add_settings_field(
@@ -364,12 +371,33 @@ class Rcreviews_Admin {
 				'wp_data'          => 'option',
 			),
 		);
-
 		register_setting(
 			'rcreviews_settings',
-			'rcreviews_client_id'
+			'rcreviews_access_token'
 		);
 
+		add_settings_field(
+			'rcreviews_agency_id',
+			'Agent ID',
+			array( $this, 'rcreviews_render_settings_field' ),
+			'rcreviews_settings',
+			'rcreviews_settings_section',
+			array(
+				'type'             => 'input',
+				'subtype'          => 'text',
+				'id'               => 'rcreviews_agency_id',
+				'name'             => 'rcreviews_agency_id',
+				'required'         => 'true',
+				$disabled_agent    => '',
+				'get_options_list' => '',
+				'value_type'       => 'normal',
+				'wp_data'          => 'option',
+			),
+		);
+		register_setting(
+			'rcreviews_settings',
+			'rcreviews_agency_id'
+		);
 	}
 	public function register_default_values_for_settings_field() {
 		if ( getenv( 'REA_CLIENT_ID' ) ) {
@@ -378,11 +406,14 @@ class Rcreviews_Admin {
 		if ( getenv( 'REA_CLIENT_SECRET' ) ) {
 			update_option( 'rcreviews_client_secret', getenv( 'REA_CLIENT_SECRET' ) );
 		}
+		if ( getenv( 'REA_AGENCY_ID' ) ) {
+			update_option( 'rcreviews_agency_id', getenv( 'REA_AGENCY_ID' ) );
+		}
 
-		$url           = "https://api.realestate.com.au/oauth/token";
+		$url           = 'https://api.realestate.com.au/oauth/token';
 		$client_id     = get_option( 'rcreviews_client_id' );
 		$client_secret = get_option( 'rcreviews_client_secret' );
-		$data          = array( "grant_type" => "client_credentials" );
+		$data          = array( 'grant_type' => 'client_credentials' );
 
 		$ch = curl_init();
 		curl_setopt( $ch, CURLOPT_URL, $url );
@@ -394,7 +425,7 @@ class Rcreviews_Admin {
 		$output = curl_exec( $ch );
 
 		// if ($output === FALSE) {
-		// 	echo "cURL Error: " . curl_error($ch);
+		// echo "cURL Error: " . curl_error($ch);
 		// }
 
 		curl_close( $ch );
@@ -442,7 +473,7 @@ class Rcreviews_Admin {
 				}
 				break;
 			default:
-				# code...
+				// code...
 				break;
 		}
 	}
