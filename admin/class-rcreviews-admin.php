@@ -277,6 +277,18 @@ class Rcreviews_Admin {
 				'rcreviews_agent_name_callback',
 				'rcreviews' 
 			);
+			add_meta_box(
+				'rcreview_listing_id',
+				'Listing ID',
+				'rcreviews_listing_id_callback',
+				'rcreviews' 
+			);
+			add_meta_box(
+				'rcreview_unique_id',
+				'Unique ID',
+				'rcreviews_unique_id_callback',
+				'rcreviews' 
+			);
 		}
 		add_action('add_meta_boxes', 'rcreviews_add_meta_boxes');
 
@@ -299,6 +311,14 @@ class Rcreviews_Admin {
 		function rcreviews_agent_name_callback( $post ) {
 			$value = esc_html( get_post_meta( $post->ID, 'rcreview_agent_name', true ) );
 			echo '<input type="text" name="rcreview_agent_name" id="rcreview_agent_name" value="' . $value . '">';
+		}
+		function rcreviews_listing_id_callback( $post ) {
+			$value = esc_html( get_post_meta( $post->ID, 'rcreview_listing_id', true ) );
+			echo '<input type="text" name="rcreview_listing_id" id="rcreview_listing_id" value="' . $value . '">';
+		}
+		function rcreviews_unique_id_callback( $post ) {
+			$value = esc_html( get_post_meta( $post->ID, 'rcreview_unique_id', true ) );
+			echo '<input type="text" name="rcreview_unique_id" id="rcreview_unique_id" value="' . $value . '">';
 		}
 
 		function save_post_rcreviews_meta_boxes( $post_id ) {
@@ -323,6 +343,14 @@ class Rcreviews_Admin {
 
 				if ( isset( $_POST['rcreview_agent_name'] ) && $_POST['rcreview_agent_name'] != '' ) {
 					update_post_meta( $post_id, 'rcreview_agent_name', $_POST['rcreview_agent_name'] );
+				}
+
+				if ( isset( $_POST['rcreview_listing_id'] ) && $_POST['rcreview_listing_id'] != '' ) {
+					update_post_meta( $post_id, 'rcreview_listing_id', $_POST['rcreview_listing_id'] );
+				}
+
+				if ( isset( $_POST['rcreview_unique_id'] ) && $_POST['rcreview_unique_id'] != '' ) {
+					update_post_meta( $post_id, 'rcreview_unique_id', $_POST['rcreview_unique_id'] );
 				}
 			}
 		}
