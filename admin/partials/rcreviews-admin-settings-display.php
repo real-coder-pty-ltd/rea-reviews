@@ -32,6 +32,12 @@
 						id="connection-status"><?php echo get_option( 'rcreviews_access_token' ) != '' ? '<span class="text-success">Success</span>' : '<span class="text-warning">Failure</span>' ?>
 					</td>
 				</tr>
+				<tr>
+					<th scope="row">Last Import</th>
+					<td
+						id="last-import"><?php echo get_option( 'rcreviews_last_import' ) ? : 'N/A' ?>
+					</td>
+				</tr>
 			</tbody>
 		</table>
 		<?php submit_button(); ?>

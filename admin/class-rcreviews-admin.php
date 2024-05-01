@@ -411,6 +411,17 @@ class Rcreviews_Admin {
 			'rcreviews_settings'
 		);
 
+		add_settings_section(
+			// ID used to identify this section and with which to register options
+			'rcreviews_main_settings_section',
+			// Title to be displayed on the administration page
+			'Import Details',
+			// Callback used to render the description of the section
+			array( $this, 'rcreviews_main_settings_account' ),
+			// Page on which to add this section of options
+			'rcreviews_main_settings'
+		);
+
 		$disabled_id     = '';
 		$disabled_secret = '';
 		$disabled_agent  = '';
@@ -516,10 +527,33 @@ class Rcreviews_Admin {
 			'rcreviews_settings',
 			'rcreviews_agency_id'
 		);
+
+		add_settings_field(
+			'rcreviews_last_import',
+			'Last Import',
+			array( $this, 'rcreviews_render_settings_field' ),
+			'rcreviews_main_settings',
+			'rcreviews_main_settings_section',
+			array(
+				'type'             => 'hidden',
+				'subtype'          => 'text',
+				'id'               => 'rcreviews_last_import',
+				'name'             => 'rcreviews_last_import',
+				'required'         => 'true',
+				'disabled'    => '',
+				'get_options_list' => '',
+				'value_type'       => 'normal',
+				'wp_data'          => 'option',
+			),
+		);
+		register_setting(
+			'rcreviews_main_settings',
+			'rcreviews_last_import'
+		);
 	}
 	public function register_default_values_for_settings_field() {
 		if ( getenv( 'REA_CLIENT_ID' ) ) {
-			update_option( 'rcreviews_client_id', '2d1cb321-ca68-41fa-b9a9-5dab08e414f6' );
+			update_option( 'rcreviews_client_id', getenv( 'REA_CLIENT_ID' ) );
 		}
 		if ( getenv( 'REA_CLIENT_SECRET' ) ) {
 			update_option( 'rcreviews_client_secret', getenv( 'REA_CLIENT_SECRET' ) );
@@ -560,6 +594,9 @@ class Rcreviews_Admin {
 
 	public function rcreviews_settings_account() {
 		echo '<p>Please add the correct API credentials on .env file.</p>';
+	}
+	public function rcreviews_settings_main_account() {
+		echo '<p>Please add the agency ID on .env file.</p>';
 	}
 	public function rcreviews_render_settings_field( $args ) {
 		if ( $args['wp_data'] == 'option' ) {
