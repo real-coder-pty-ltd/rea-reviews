@@ -15,7 +15,7 @@
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
 <div class="wrap">
 	<div id="icon-themes" class="icon32"></div>
-	<h2>Settings</h2>
+	<h1>RC Reviews Settings</h1>
 	<!--NEED THE settings_errors below so that the errors/success messages are shown after submission - wasn't working once we started using add_menu_page and stopped using add_options_page so needed this-->
 	<?php settings_errors(); ?>
 	<form
@@ -29,13 +29,13 @@
 				<tr>
 					<th scope="row">Connection Status</th>
 					<td
-						id="connection-status"><?php echo get_option( 'rcreviews_access_token' ) != '' ? '<span class="text-success">Success</span>' : '<span class="text-warning">Failure</span>' ?>
+						id="connection-status"><?php echo get_option( 'rcreviews_access_token' ) != '' ? '<span class="text-success">Success</span>' : '<span class="text-warning">Failure</span>'; ?>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row">Last Import</th>
 					<td
-						id="last-import"><?php echo get_option( 'rcreviews_last_import' ) ? : 'N/A' ?>
+						id="last-import"><?php echo get_option( 'rcreviews_last_import' ) ? : 'N/A'; ?>
 					</td>
 				</tr>
 			</tbody>

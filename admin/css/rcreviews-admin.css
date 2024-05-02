@@ -10,3 +10,11 @@
 .text-success {
     color: #008000;
 }
+
+.d-none {
+    display: none;
+}
+
+#rcreviews-progress {
+    width: 222px;
+}
