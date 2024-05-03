@@ -35,7 +35,19 @@
 	$access_token = get_option( 'rcreviews_access_token' );
 	$agency_id    = get_option( 'rcreviews_agency_id' );
 	$last_import  = get_option( 'rcreviews_last_import' );
-	$url          = 'https://api.realestate.com.au/customer-profile/v1/ratings-reviews/agencies/' . $agency_id . '?since=2010-09-06T12%3A27%3A00.1Z&order=DESC';
+
+	$minimum_star_rating = get_option( 'rcreviews_minimum_star_rating' );
+	$numbers = '';
+
+	if ($minimum_star_rating){
+		for ($i = $minimum_star_rating; $i <= 5; $i++) {
+			$numbers .= $i . ',';
+		}
+		$minimum_star_rating = '&ratings=' . rtrim($numbers, ',');
+	} else {
+		$minimum_star_rating = '';
+	}
+	$url          = 'https://api.realestate.com.au/customer-profile/v1/ratings-reviews/agencies/' . $agency_id . '?since=2010-09-06T12%3A27%3A00.1Z&order=DESC' . $minimum_star_rating;
 
 	$ch = curl_init();
 
@@ -57,6 +69,10 @@
 	curl_close( $ch );
 
 	$data = json_decode( $result, true );
+
+	// echo '<pre>';
+	// print_r( $data );
+	// echo '</pre>';
 	?>
 
 	<?php if ( get_option( 'rcreviews_access_token' ) == '' ): ?>

@@ -550,8 +550,8 @@ class Rcreviews_Admin {
 			'rcreviews_main_settings',
 			'rcreviews_main_settings_section',
 			array(
-				'type'             => 'hidden',
-				'subtype'          => 'text',
+				'type'             => 'input',
+				'subtype'          => 'hidden',
 				'id'               => 'rcreviews_last_import',
 				'name'             => 'rcreviews_last_import',
 				'required'         => 'true',
@@ -564,6 +564,28 @@ class Rcreviews_Admin {
 		register_setting(
 			'rcreviews_main_settings',
 			'rcreviews_last_import'
+		);
+
+		add_settings_field(
+			'rcreviews_minimum_star_rating',
+			'Minimum Star Rating',
+			array( $this, 'rcreviews_render_settings_field' ),
+			'rcreviews_settings',
+			'rcreviews_settings_section',
+			array(
+				'type'             => 'input',
+				'subtype'          => 'text',
+				'id'               => 'rcreviews_minimum_star_rating',
+				'name'             => 'rcreviews_minimum_star_rating',
+				'required'         => 'true',
+				'get_options_list' => '',
+				'value_type'       => 'normal',
+				'wp_data'          => 'option',
+			),
+		);
+		register_setting(
+			'rcreviews_settings',
+			'rcreviews_minimum_star_rating'
 		);
 	}
 	public function register_default_values_for_settings_field() {
