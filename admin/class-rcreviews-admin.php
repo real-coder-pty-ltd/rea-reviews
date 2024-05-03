@@ -116,7 +116,20 @@ class Rcreviews_Admin {
 		 */
 
 		$agency_id = get_option( 'rcreviews_agency_id' );
-		$url_first = 'https://api.realestate.com.au/customer-profile/v1/ratings-reviews/agencies/' . $agency_id . '?since=2010-09-06T12%3A27%3A00.1Z&order=DESC';
+
+		$minimum_star_rating = get_option( 'rcreviews_minimum_star_rating' );
+		$numbers             = '';
+
+		if ( $minimum_star_rating ) {
+			for ( $i = $minimum_star_rating; $i <= 5; $i++ ) {
+				$numbers .= $i . ',';
+			}
+			$minimum_star_rating = '&ratings=' . rtrim( $numbers, ',' );
+		} else {
+			$minimum_star_rating = '';
+		}
+		
+		$url_first = 'https://api.realestate.com.au/customer-profile/v1/ratings-reviews/agencies/' . $agency_id . '?since=2010-09-06T12%3A27%3A00.1Z&order=DESC' . $minimum_star_rating;
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/rcreviews-admin.js', array( 'jquery' ), $this->version, false );
 		wp_enqueue_script( 'rcreviews-ajax', plugin_dir_url( __FILE__ ) . '/js/rcreviews-ajax.js', array( 'jquery' ), '1.0', true );
