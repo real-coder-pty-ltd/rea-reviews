@@ -72,6 +72,9 @@ class Rcreviews_Admin {
 
 		// Ajax handler function
 		add_action( 'admin_init', array( $this, 'rcreviews_ajax_handler_function' ) );
+
+		// Add shortcode
+		add_shortcode( 'rcreviews', array( $this, 'rcreviews_shortcode_function' ) );
 	}
 
 	/**
@@ -128,7 +131,7 @@ class Rcreviews_Admin {
 		} else {
 			$minimum_star_rating = '';
 		}
-		
+
 		$url_first = 'https://api.realestate.com.au/customer-profile/v1/ratings-reviews/agencies/' . $agency_id . '?since=2010-09-06T12%3A27%3A00.1Z&order=DESC' . $minimum_star_rating;
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/rcreviews-admin.js', array( 'jquery' ), $this->version, false );
@@ -844,5 +847,125 @@ class Rcreviews_Admin {
 		}
 		add_action( 'wp_ajax_rcreviews_empty_reviews', 'rcreviews_empty_reviews_ajax_handler' );
 		add_action( 'wp_ajax_nopriv_rcreviews_empty_reviews', 'rcreviews_empty_reviews_ajax_handler' );
+	}
+
+	public function rcreviews_shortcode_function( $atts ) {
+		$output = '';
+		$badge  = file_get_contents( plugin_dir_path( __FILE__ ) . '../assets/images/badge.svg' );
+
+		// Set default values for the attributes
+		$atts = shortcode_atts(
+			array(
+				'posts_per_page'      => -1,
+				'min_stars'           => 5,
+				'agent_id'            => '',
+				'agent_name'          => '',
+				'view'                => 'list',
+				'class_section'       => '',
+				'class_container'     => 'container',
+				'class_row'           => 'row',
+				'class_article'       => 'col-12 mb-3',
+				'class_card'          => 'bg-light rounded p-3',
+				'class_inner_row'     => 'row align-items-center justify-content-between',
+				'class_rating'        => 'col d-flex align-items-center',
+				'class_rating_stars'  => 'd-flex align-items-center',
+				'class_rating_number' => 'ps-1',
+				'class_badge'         => 'col text-end',
+				'class_title'         => '',
+				'class_date'          => '',
+				'class_content'       => 'mt-2',
+			),
+			$atts,
+			'rcreviews'
+		);
+
+		$meta_query = array(
+			'relation' => 'AND',
+			array(
+				'key'     => 'rcreview_reviewer_rating',
+				'value'   => $atts['min_stars'],
+				'compare' => '>=',
+			),
+		);
+
+		if ( ! empty( $atts['agent_id'] ) || ! empty( $atts['agent_name'] ) ) {
+			$meta_query[] = array(
+				'relation' => 'OR',
+				array(
+					'key'     => 'rcreview_agent_id',
+					'value'   => $atts['agent_id'],
+					'compare' => '=',
+				),
+				array(
+					'key'     => 'rcreview_agent_name',
+					'value'   => $atts['agent_name'],
+					'compare' => 'LIKE',
+				),
+			);
+		}
+
+		$args = array(
+			'post_type'      => 'rcreviews',
+			'post_status'    => 'publish',
+			'posts_per_page' => $atts['posts_per_page'],
+			'meta_query'     => $meta_query,
+		);
+
+		$query = new WP_Query( $args );
+
+		function rcreviews_rating( $rating ) {
+			$star   = file_get_contents( plugin_dir_path( __FILE__ ) . '../assets/images/star.svg' );
+			$output = '';
+
+			$rating = intval( $rating );
+			for ( $i = 0; $i < $rating; $i++ ) {
+				$output .= $star;
+			}
+			return $output;
+		}
+		function rcreviews_add_space_before( $string ) {
+			if ( $string != '' ) {
+				return ' ' . $string;
+			} else {
+				return '';
+			}
+		}
+
+		$output .= '<section class="rcreviews--section' . rcreviews_add_space_before( $atts['class_section'] ) . '">';
+		$output .= '<div class="rcreviews--container' . rcreviews_add_space_before( $atts['class_container'] ) . '"> ';
+		$output .= '<div class="rcreviews--row' . rcreviews_add_space_before( $atts['class_row'] ) . '">';
+
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post();
+
+				$output .= '<article class="col' . rcreviews_add_space_before( $atts['class_article'] ) . '" id="rcreviews-' . get_the_ID() . '" data-agent-id="' . get_post_meta( get_the_ID(), 'rcreview_agent_id', true ) . '">';
+				$output .= '<div class="rcreviews-card' . rcreviews_add_space_before( $atts['class_card'] ) . '">';
+				$output .= '<div class="rcreviews--inner-row' . rcreviews_add_space_before( $atts['class_inner_row'] ) . '">';
+				$output .= '<div class="rcreviews-rating' . rcreviews_add_space_before( $atts['class_rating'] ) . '">';
+				$output .= '<div class="rcreviews-rating--stars' . rcreviews_add_space_before( $atts['class_rating_stars'] ) . '">' . rcreviews_rating( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ) ) . '</div>';
+				$output .= '<div class="rcreviews-rating--number' . rcreviews_add_space_before( $atts['class_rating_number'] ) . '">' . number_format( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ), 1 ) . '</div>';
+				$output .= '</div>';
+				$output .= '<div class="rcreviews-badge' . rcreviews_add_space_before( $atts['class_badge'] ) . '">' . $badge . 'Verified review</div>';
+				$output .= '</div>';
+				$output .= '<div class="rcreviews-title' . rcreviews_add_space_before( $atts['class_title'] ) . '"><strong>' . get_the_title() . '</strong></div>';
+				$output .= '<div class="rcreviews-date' . rcreviews_add_space_before( $atts['class_date'] ) . '"><small>' . human_time_diff( get_the_time( 'U' ), current_time( 'timestamp' ) ) . ' ago</small></div>';
+				$output .= '<div class="rcreviews-content' . rcreviews_add_space_before( $atts['class_content'] ) . '">' . get_the_content() . '</div>';
+				$output .= '</div>';
+				$output .= '</article>';
+			}
+
+			// Restore original Post Data
+			wp_reset_postdata();
+		} else {
+			// No posts found
+			echo 'No posts found.';
+		}
+
+		$output .= '</div>';
+		$output .= '</div>';
+		$output .= '</section>';
+
+		return $output;
 	}
 }
