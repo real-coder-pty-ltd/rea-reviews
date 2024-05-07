@@ -1,49 +1,47 @@
-jQuery( document ).ready(function($) {
-	'use strict';
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
 
-	var $icon_down  = '<svg class="CK__Icon--medium" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.146 4.646a.5.5 0 0 0 0 .708l6.5 6.5a.5.5 0 0 0 .708 0l6.5-6.5a.5.5 0 0 0-.708-.708L8 10.793 1.854 4.646a.5.5 0 0 0-.708 0Z" fill="#00639E"></path></svg>';
+    var icon_down = '<svg class="CK__Icon--medium" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.146 4.646a.5.5 0 0 0 0 .708l6.5 6.5a.5.5 0 0 0 .708 0l6.5-6.5a.5.5 0 0 0-.708-.708L8 10.793 1.854 4.646a.5.5 0 0 0-.708 0Z" fill="#00639E"></path></svg>';
 
-	function truncateContent() {
-		$('.rcreviews--content').each(function() {
-			var $this = $(this);
-			var lineHeight = parseInt($this.css('line-height'), 10);
-			var lines = Math.ceil($this[0].scrollHeight / lineHeight);
-			
-			if ( 2 < lines && !$this.hasClass('rcreviews--has-truncate') ){
-				$this.addClass('rcreviews--has-truncate');
-				$this.addClass('rcreviews--truncate');
-				$this.after('<div class="rcreviews--read-more-wrapper"><span class="rcreviews--read-more">Read More ' + $icon_down + '</span></div>');
-			}
-		});
-	}
-	
-	truncateContent();
+    function truncateContent() {
+        document.querySelectorAll('.rcreviews--content').forEach(function(el) {
+            var lineHeight = parseInt(window.getComputedStyle(el).getPropertyValue('line-height'), 10);
+            var lines = Math.ceil(el.scrollHeight / lineHeight);
 
-	$('.rcreviews--btn').on('click', function() {
-		$('.rcreviews--hidden-review').each(function() {
-			$(this).toggleClass('d-none');
-		});
-		
-		truncateContent();
+            if (2 < lines && !el.classList.contains('rcreviews--has-truncate')) {
+                el.classList.add('rcreviews--has-truncate');
+                el.classList.add('rcreviews--truncate');
+                el.insertAdjacentHTML('afterend', '<div class="rcreviews--read-more-wrapper"><span class="rcreviews--read-more">Read More ' + icon_down + '</span></div>');
+            }
+        });
+    }
 
-		var label = $('.rcreviews--label');
-		var count = $('.rcreviews--count');
-		label.toggleClass('active');
-		count.toggleClass('d-none');
-	
-		if (label.hasClass('active')) {
-			label.text('Show less');
-		} else {
-			label.text('Show');
-		}
-	});
+    truncateContent();
 
-	$(document).on('click', '.rcreviews--read-more', function() {
-		$(this).parent().prev().removeClass('rcreviews--truncate');
-		$(this).parent().remove();
-		console.log('click');
-	});
+    document.querySelector('.rcreviews--btn').addEventListener('click', function() {
+        document.querySelectorAll('.rcreviews--hidden-review').forEach(function(el) {
+            el.classList.toggle('d-none');
+        });
 
+        truncateContent();
+
+        var label = document.querySelector('.rcreviews--label');
+        var count = document.querySelector('.rcreviews--count');
+        label.classList.toggle('active');
+        count.classList.toggle('d-none');
+
+        if (label.classList.contains('active')) {
+            label.textContent = 'Show less';
+        } else {
+            label.textContent = 'Show';
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.rcreviews--read-more')) {
+            e.target.parentElement.previousElementSibling.classList.remove('rcreviews--truncate');
+            e.target.parentElement.remove();
+            console.log('click');
+        }
+    });
 });
-
-
