@@ -2,3 +2,25 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+.truncate {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+}
+.read-more-wrapper{
+    display: flex;
+    justify-content: end;
+}
+.read-more{
+    color: #00639E;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 15px;
+}
+.read-more.active svg{
+    transform: rotate(180deg);
+}
+.read-more:hover {
+    color: #005180;
+}
