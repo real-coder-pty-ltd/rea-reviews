@@ -888,18 +888,38 @@ class Rcreviews_Admin {
 			),
 		);
 
-		if ( ! empty( $atts['agent_id'] ) || ! empty( $atts['agent_name'] ) ) {
+		if ( ! empty( $atts['agent_id'] ) && ! empty( $atts['agent_name'] ) ) {
+			$agent_names  = explode( ',', $atts['agent_name'] );
+			$agent_ids    = explode( ',', $atts['agent_id'] );
 			$meta_query[] = array(
 				'relation' => 'OR',
 				array(
 					'key'     => 'rcreview_agent_id',
-					'value'   => $atts['agent_id'],
-					'compare' => '=',
+					'value'   => $agent_ids,
+					'compare' => 'IN',
 				),
 				array(
 					'key'     => 'rcreview_agent_name',
-					'value'   => $atts['agent_name'],
-					'compare' => 'LIKE',
+					'value'   => $agent_names,
+					'compare' => 'IN',
+				),
+			);
+		} elseif ( ! empty( $atts['agent_id'] ) && empty( $atts['agent_name'] ) ) {
+			$agent_ids    = explode( ',', $atts['agent_id'] );
+			$meta_query[] = array(
+				array(
+					'key'     => 'rcreview_agent_id',
+					'value'   => $agent_ids,
+					'compare' => 'IN',
+				),
+			);
+		} elseif ( ! empty( $atts['agent_name'] ) && empty( $atts['agent_id'] ) ) {
+			$agent_names  = explode( ',', $atts['agent_name'] );
+			$meta_query[] = array(
+				array(
+					'key'     => 'rcreview_agent_name',
+					'value'   => $agent_names,
+					'compare' => 'IN',
 				),
 			);
 		}
@@ -959,7 +979,7 @@ class Rcreviews_Admin {
 			wp_reset_postdata();
 		} else {
 			// No posts found
-			echo 'No posts found.';
+			echo 'No reviews found.';
 		}
 
 		$output .= '</div>';
