@@ -850,13 +850,15 @@ class Rcreviews_Admin {
 	}
 
 	public function rcreviews_shortcode_function( $atts ) {
-		$output = '';
-		$badge  = file_get_contents( plugin_dir_path( __FILE__ ) . '../assets/images/badge.svg' );
+		$output           = '';
+		$badge            = file_get_contents( plugin_dir_path( __FILE__ ) . '../assets/images/badge.svg' );
+		$class_visibility = ' shown-review';
 
 		// Set default values for the attributes
 		$atts = shortcode_atts(
 			array(
-				'posts_per_page'      => -1,
+				'max_reviews'         => -1,
+				'shown_reviews'       => 3,
 				'min_stars'           => 5,
 				'agent_id'            => '',
 				'agent_name'          => '',
@@ -874,6 +876,8 @@ class Rcreviews_Admin {
 				'class_title'         => '',
 				'class_date'          => '',
 				'class_content'       => 'mt-2',
+				'class_btn_wrapper'   => 'd-flex justify-content-center',
+				'class_btn'           => 'btn btn-outline-dark fw-semibold py-3 px-4',
 			),
 			$atts,
 			'rcreviews'
@@ -927,7 +931,7 @@ class Rcreviews_Admin {
 		$args = array(
 			'post_type'      => 'rcreviews',
 			'post_status'    => 'publish',
-			'posts_per_page' => $atts['posts_per_page'],
+			'posts_per_page' => $atts['max_reviews'],
 			'meta_query'     => $meta_query,
 		);
 
@@ -959,18 +963,24 @@ class Rcreviews_Admin {
 			while ( $query->have_posts() ) {
 				$query->the_post();
 
-				$output .= '<article class="col' . rcreviews_add_space_before( $atts['class_article'] ) . '" id="rcreviews-' . get_the_ID() . '" data-agent-id="' . get_post_meta( get_the_ID(), 'rcreview_agent_id', true ) . '">';
-				$output .= '<div class="rcreviews-card' . rcreviews_add_space_before( $atts['class_card'] ) . '">';
+				if ( $query->current_post <= ( $atts['shown_reviews'] - 1 ) ) {
+					$class_visibility = ' rcreviews--shown-review';
+				} else {
+					$class_visibility = ' rcreviews--hidden-review d-none';
+				}
+
+				$output .= '<article class="rcreviews--article col' . $class_visibility . rcreviews_add_space_before( $atts['class_article'] ) . '" id="rcreviews-' . get_the_ID() . '" data-agent-id="' . get_post_meta( get_the_ID(), 'rcreview_agent_id', true ) . '">';
+				$output .= '<div class="rcreviews--card' . rcreviews_add_space_before( $atts['class_card'] ) . '">';
 				$output .= '<div class="rcreviews--inner-row' . rcreviews_add_space_before( $atts['class_inner_row'] ) . '">';
-				$output .= '<div class="rcreviews-rating' . rcreviews_add_space_before( $atts['class_rating'] ) . '">';
-				$output .= '<div class="rcreviews-rating--stars' . rcreviews_add_space_before( $atts['class_rating_stars'] ) . '">' . rcreviews_rating( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ) ) . '</div>';
-				$output .= '<div class="rcreviews-rating--number' . rcreviews_add_space_before( $atts['class_rating_number'] ) . '">' . number_format( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ), 1 ) . '</div>';
+				$output .= '<div class="rcreviews--rating' . rcreviews_add_space_before( $atts['class_rating'] ) . '">';
+				$output .= '<div class="rcreviews--rating-stars' . rcreviews_add_space_before( $atts['class_rating_stars'] ) . '">' . rcreviews_rating( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ) ) . '</div>';
+				$output .= '<div class="rcreviews-rating-number' . rcreviews_add_space_before( $atts['class_rating_number'] ) . '">' . number_format( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ), 1 ) . '</div>';
 				$output .= '</div>';
-				$output .= '<div class="rcreviews-badge' . rcreviews_add_space_before( $atts['class_badge'] ) . '">' . $badge . 'Verified review</div>';
+				$output .= '<div class="rcreviews--badge' . rcreviews_add_space_before( $atts['class_badge'] ) . '">' . $badge . 'Verified review</div>';
 				$output .= '</div>';
-				$output .= '<div class="rcreviews-title' . rcreviews_add_space_before( $atts['class_title'] ) . '"><strong>' . get_the_title() . '</strong></div>';
-				$output .= '<div class="rcreviews-date' . rcreviews_add_space_before( $atts['class_date'] ) . '"><small>' . human_time_diff( get_the_time( 'U' ), current_time( 'timestamp' ) ) . ' ago</small></div>';
-				$output .= '<div class="rcreviews-content' . rcreviews_add_space_before( $atts['class_content'] ) . '">' . get_the_content() . '</div>';
+				$output .= '<div class="rcreviews--title' . rcreviews_add_space_before( $atts['class_title'] ) . '"><strong>' . get_the_title() . '</strong></div>';
+				$output .= '<div class="rcreviews--date' . rcreviews_add_space_before( $atts['class_date'] ) . '"><small>' . human_time_diff( get_the_time( 'U' ), current_time( 'timestamp' ) ) . ' ago</small></div>';
+				$output .= '<div class="rcreviews--content' . rcreviews_add_space_before( $atts['class_content'] ) . '">' . get_the_content() . '</div>';
 				$output .= '</div>';
 				$output .= '</article>';
 			}
@@ -983,6 +993,18 @@ class Rcreviews_Admin {
 		}
 
 		$output .= '</div>';
+
+		if ( ! empty( $atts['max_reviews'] ) && $atts['max_reviews'] > 0 ) {
+			if ( $atts['max_reviews'] > $atts['shown_reviews'] ) {
+				$output .= '<div class="rcreviews--btn-wrapper' . rcreviews_add_space_before( $atts['class_btn_wrapper'] ) . '">';
+				$output .= '<button class="rcreviews--btn' . rcreviews_add_space_before( $atts['class_btn'] ) . '"><span class="rcreviews--label">Show</span> <span class="rcreviews--count">' . $atts['max_reviews'] - $atts['shown_reviews'] . '</span> reviews</button>';
+				$output .= '</div>';
+			}
+		} elseif ( $query->found_posts > $atts['shown_reviews'] ) {
+				$output .= '<div class="rcreviews--btn-wrapper' . rcreviews_add_space_before( $atts['class_btn_wrapper'] ) . '">';
+				$output .= '<button class="rcreviews--btn' . rcreviews_add_space_before( $atts['class_btn'] ) . '"><span class="rcreviews--label">Show</span> <span class="rcreviews--count">' . $query->found_posts - $atts['shown_reviews'] . '</span> reviews</button>';
+				$output .= '</div>';
+		}
 		$output .= '</div>';
 		$output .= '</section>';
 
