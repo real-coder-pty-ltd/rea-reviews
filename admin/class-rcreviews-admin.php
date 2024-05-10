@@ -75,6 +75,15 @@ class Rcreviews_Admin {
 
 		// Add shortcode
 		add_shortcode( 'rcreviews', array( $this, 'rcreviews_shortcode_function' ) );
+
+		// Add cron job
+		add_action( 'rcreviews_cron_hook', array( $this, 'rcreviews_cron_exec' ) );
+
+		// Add cron schedules
+		add_filter( 'cron_schedules', array( $this, 'rcreviews_cron_schedules' ) );
+
+		// Update cron schedules
+		add_action( 'update_option_rcreviews_sync_interval', array( $this, 'rcreviews_refresh_cron' ) );
 	}
 
 	/**
@@ -603,6 +612,28 @@ class Rcreviews_Admin {
 			'rcreviews_settings',
 			'rcreviews_minimum_star_rating'
 		);
+
+		add_settings_field(
+			'rcreviews_sync_interval',
+			'Sync Interval in Hours',
+			array( $this, 'rcreviews_render_settings_field' ),
+			'rcreviews_settings',
+			'rcreviews_settings_section',
+			array(
+				'type'             => 'input',
+				'subtype'          => 'text',
+				'id'               => 'rcreviews_sync_interval',
+				'name'             => 'rcreviews_sync_interval',
+				'required'         => 'true',
+				'get_options_list' => '',
+				'value_type'       => 'normal',
+				'wp_data'          => 'option',
+			),
+		);
+		register_setting(
+			'rcreviews_settings',
+			'rcreviews_sync_interval'
+		);
 	}
 	public function register_default_values_for_settings_field() {
 		if ( getenv( 'REA_CLIENT_ID' ) ) {
@@ -1009,5 +1040,163 @@ class Rcreviews_Admin {
 		$output .= '</section>';
 
 		return $output;
+	}
+
+	public function rcreviews_cron_exec() {
+		$agency_id = get_option( 'rcreviews_agency_id' );
+
+		$minimum_star_rating = get_option( 'rcreviews_minimum_star_rating' );
+		$numbers             = '';
+
+		if ( $minimum_star_rating ) {
+			for ( $i = $minimum_star_rating; $i <= 5; $i++ ) {
+				$numbers .= $i . ',';
+			}
+			$minimum_star_rating = '&ratings=' . rtrim( $numbers, ',' );
+		} else {
+			$minimum_star_rating = '';
+		}
+
+		$date = new DateTime();
+		$date->modify( '-30 days' );
+		$dateString  = $date->format( 'Y-m-d\TH:i:s\Z' );
+		$encodedDate = urlencode( $dateString );
+
+		$url_first = 'https://api.realestate.com.au/customer-profile/v1/ratings-reviews/agencies/' . $agency_id . '?since=' . $encodedDate . '&order=DESC' . $minimum_star_rating;
+
+		function rcreviews_cron_exec_feed( $url ) {
+			$access_token = get_option( 'rcreviews_access_token' );
+			$ch           = curl_init();
+
+			curl_setopt( $ch, CURLOPT_URL, $url );
+			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+			curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'GET' );
+
+			$headers   = array();
+			$headers[] = 'Accept: application/hal+json';
+			$headers[] = 'Authorization: Bearer ' . $access_token;
+
+			curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+			$result = curl_exec( $ch );
+
+			if ( curl_errno( $ch ) ) {
+				echo 'Error:' . curl_error( $ch );
+			}
+
+			curl_close( $ch );
+
+			$data         = json_decode( $result, true );
+			$rating       = 0;
+			$role         = 'Seller';
+			$name         = '';
+			$created_date = '';
+			$content      = '';
+			$agent_id     = 0;
+			$agent_name   = '';
+			$listing_id   = 0;
+			$unique_id    = 0;
+
+			foreach ( $data['result'] as $review ) {
+				if ( isset( $review['rating'] ) ) {
+					$rating = $review['rating'];
+				}
+				if ( isset( $review['reviewer']['role'] ) ) {
+					$role = ucfirst( $review['reviewer']['role'] );
+				}
+				if ( isset( $review['reviewer']['name'] ) ) {
+					$name = ucfirst( $review['reviewer']['name'] );
+				}
+				if ( isset( $review['createdDate'] ) ) {
+					$created_date            = $review['createdDate'];
+					$created_date_as_post_id = strtotime( $review['createdDate'] );
+				}
+				if ( isset( $review['content'] ) ) {
+					$content = $review['content'];
+				}
+				if ( isset( $review['agent']['profileId'] ) ) {
+					$agent_id = $review['agent']['profileId'];
+				}
+				if ( isset( $review['agent']['name'] ) ) {
+					$agent_name = $review['agent']['name'];
+				}
+				if ( isset( $review['listing']['id'] ) ) {
+					$listing_id = $review['listing']['id'];
+				}
+				$unique_id = $listing_id . '-' . $agent_id . '-' . $created_date_as_post_id;
+
+				// Insert post
+				$new_post = array(
+					'post_title'   => $role . ' of house',
+					'post_content' => $content,
+					'post_status'  => 'publish',
+					'post_author'  => 1,
+					'post_date'    => $created_date,
+					'post_type'    => 'rcreviews',
+					'meta_input'   => array(
+						'rcreview_reviewer_rating' => $rating,
+						'rcreview_reviewer_role'   => $role,
+						'rcreview_reviewer_name'   => $name,
+						'rcreview_agent_id'        => $agent_id,
+						'rcreview_agent_name'      => $agent_name,
+						'rcreview_listing_id'      => $listing_id,
+						'rcreview_unique_id'       => $unique_id,
+					),
+				);
+
+				$args_by_unique_id = array(
+					'post_type'  => 'rcreviews',
+					'meta_query' => array(
+						array(
+							'key'   => 'rcreview_unique_id',
+							'value' => $unique_id,
+						),
+					),
+				);
+
+				// Insert post
+				$posts = get_posts( $args_by_unique_id );
+
+				if ( ! empty( $posts ) ) {
+					$new_post['ID'] = $posts[0]->ID;
+					wp_update_post( $new_post );
+				} else {
+					wp_insert_post( $new_post );
+				}
+			}
+
+			$url_next = $data['_links']['next']['href'];
+
+			update_option( 'rcreviews_last_import', date( 'd F Y H:i:s' ) );
+
+			// error_log( $url );
+
+			if ( $url_next ) {
+				rcreviews_cron_exec_feed( $url_next );
+			}
+		}
+
+		rcreviews_cron_exec_feed( $url_first );
+	}
+
+	public function rcreviews_cron_schedules( $schedules ) {
+		$hour     = get_option( 'rcreviews_sync_interval' ) ? : 24;
+		$interval = $hour * 60 * 60;
+
+		$schedules['rcreviews_interval'] = array(
+			'interval' => $interval,
+			'display'  => esc_html__( 'Every ' . $hour . ' Hour(s)' ),
+		);
+		return $schedules;
+	}
+
+	public function rcreviews_refresh_cron() {
+		// Unschedule the existing event
+		$timestamp = wp_next_scheduled( 'rcreviews_cron_hook' );
+		if ( $timestamp ) {
+			wp_unschedule_event( $timestamp, 'rcreviews_cron_hook' );
+		}
+
+		// Schedule a new event
+		wp_schedule_event( time(), 'rcreviews_interval', 'rcreviews_cron_hook' );
 	}
 }

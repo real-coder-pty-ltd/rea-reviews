@@ -30,7 +30,7 @@ class Rcreviews_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-
+		$timestamp = wp_next_scheduled( 'rcreviews_cron_hook' );
+		wp_unschedule_event( $timestamp, 'rcreviews_cron_hook' );
 	}
-
 }
