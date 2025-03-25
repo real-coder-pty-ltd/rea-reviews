@@ -1,5 +1,5 @@
 {
-    "name": "mattneal/rcreviews-plugin",
+    "name": "realcoder/rea-reviews",
     "description": "Import realestate.com.au reviews to your WordPress website.",
     "type": "wordpress-plugin",
     "license": "MIT",
