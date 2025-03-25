@@ -18,30 +18,45 @@ document.addEventListener('DOMContentLoaded', function() {
 
     truncateContent();
 
-    document.querySelector('.rcreviews--btn').addEventListener('click', function() {
+    const btn = document.querySelector('.rcreviews--btn');
+    if (btn) {
+      btn.addEventListener('click', function() {
         document.querySelectorAll('.rcreviews--hidden-review').forEach(function(el) {
-            el.classList.toggle('d-none');
+          el.classList.toggle('d-none');
         });
-
-        truncateContent();
-
-        var label = document.querySelector('.rcreviews--label');
-        var count = document.querySelector('.rcreviews--count');
-        label.classList.toggle('active');
-        count.classList.toggle('d-none');
-
-        if (label.classList.contains('active')) {
-            label.textContent = 'Show less';
-        } else {
-            label.textContent = 'Show';
+    
+        if (typeof truncateContent === 'function') {
+          truncateContent();
         }
-    });
-
+    
+        const label = document.querySelector('.rcreviews--label');
+        const count = document.querySelector('.rcreviews--count');
+        if (label) {
+          label.classList.toggle('active');
+        }
+        if (count) {
+          count.classList.toggle('d-none');
+        }
+    
+        if (label && label.classList.contains('active')) {
+          label.textContent = 'Show less';
+        } else if (label) {
+          label.textContent = 'Show';
+        }
+      });
+    }
+    
     document.addEventListener('click', function(e) {
-        if (e.target.matches('.rcreviews--read-more')) {
-            e.target.parentElement.previousElementSibling.classList.remove('rcreviews--truncate');
-            e.target.parentElement.remove();
-            console.log('click');
+      if (e.target.matches('.rcreviews--read-more')) {
+        const precedingElement = e.target.parentElement?.previousElementSibling;
+        if (precedingElement) {
+          precedingElement.classList.remove('rcreviews--truncate');
         }
+        if (e.target.parentElement) {
+          e.target.parentElement.remove();
+        }
+        console.log('click');
+      }
     });
+    
 });
