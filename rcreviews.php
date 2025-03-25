@@ -16,7 +16,7 @@
  * Plugin Name:       Sync Reviews from realestate.com.au
  * Plugin URI:        https://stafflink.com.au
  * Description:       Sync your realestate.com.au reviews to your real estate website via the REA API.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Julius Genetia
  * Author URI:        https://realcoder.com.au/
  * License:           GPL-2.0+
@@ -29,7 +29,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'RCREVIEWS_VERSION', '1.0.1' );
+define( 'RCREVIEWS_VERSION', '1.0.2' );
 
 /**
  * The code that runs during plugin activation.
