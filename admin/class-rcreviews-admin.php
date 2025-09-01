@@ -236,8 +236,151 @@ class rcreviews_admin {
 			'show_tagcloud'     => true,
 			'rewrite'           => false,
 		);
-		register_taxonomy( 'rcreviews_suburb', array( $post_type_slug ), $args_suburb );
-		register_taxonomy( 'rcreviews_state', array( $post_type_slug ), $args_state );
+
+		$labels_agency_id  = array(
+			'name'                       => _x( 'Agency ID', 'Taxonomy General Name', 'text_domain' ),
+			'singular_name'              => _x( 'Agency ID', 'Taxonomy Singular Name', 'text_domain' ),
+			'menu_name'                  => __( 'Agency IDs', 'text_domain' ),
+			'all_items'                  => __( 'Agency IDs', 'text_domain' ),
+			'parent_item'                => __( 'Parent Agency ID', 'text_domain' ),
+			'parent_item_colon'          => __( 'Parent Agency ID:', 'text_domain' ),
+			'new_item_name'              => __( 'New Agency ID', 'text_domain' ),
+			'add_new_item'               => __( 'Add New Agency ID', 'text_domain' ),
+			'edit_item'                  => __( 'Edit Agency ID', 'text_domain' ),
+			'update_item'                => __( 'Update Agency ID', 'text_domain' ),
+			'view_item'                  => __( 'View Agency ID', 'text_domain' ),
+			'separate_items_with_commas' => __( 'Separate states with commas', 'text_domain' ),
+			'add_or_remove_items'        => __( 'Add or remove states', 'text_domain' ),
+			'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+			'popular_items'              => __( 'Popular Agency IDs', 'text_domain' ),
+			'search_items'               => __( 'Search Agency IDs', 'text_domain' ),
+			'not_found'                  => __( 'Not Found', 'text_domain' ),
+			'no_terms'                   => __( 'No states', 'text_domain' ),
+			'items_list'                 => __( 'Agency IDs list', 'text_domain' ),
+			'items_list_navigation'      => __( 'Agency IDs list navigation', 'text_domain' ),
+		);
+
+		$args_agency_id    = array(
+			'labels'            => $labels_agency_id,
+			'hierarchical'      => false,
+			'public'            => true,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'show_in_nav_menus' => false,
+			'show_tagcloud'     => true,
+			'rewrite'           => false,
+		);
+
+
+		$labels_agent_id  = array(
+			'name'                       => _x( 'Agent ID', 'Taxonomy General Name', 'text_domain' ),
+			'singular_name'              => _x( 'Agent ID', 'Taxonomy Singular Name', 'text_domain' ),
+			'menu_name'                  => __( 'Agent IDs', 'text_domain' ),
+			'all_items'                  => __( 'Agent IDs', 'text_domain' ),
+			'parent_item'                => __( 'Parent Agent ID', 'text_domain' ),
+			'parent_item_colon'          => __( 'Parent Agent ID:', 'text_domain' ),
+			'new_item_name'              => __( 'New Agent ID', 'text_domain' ),
+			'add_new_item'               => __( 'Add New Agent ID', 'text_domain' ),
+			'edit_item'                  => __( 'Edit Agent ID', 'text_domain' ),
+			'update_item'                => __( 'Update Agent ID', 'text_domain' ),
+			'view_item'                  => __( 'View Agent ID', 'text_domain' ),
+			'separate_items_with_commas' => __( 'Separate states with commas', 'text_domain' ),
+			'add_or_remove_items'        => __( 'Add or remove states', 'text_domain' ),
+			'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+			'popular_items'              => __( 'Popular Agent IDs', 'text_domain' ),
+			'search_items'               => __( 'Search Agent IDs', 'text_domain' ),
+			'not_found'                  => __( 'Not Found', 'text_domain' ),
+			'no_terms'                   => __( 'No states', 'text_domain' ),
+			'items_list'                 => __( 'Agent IDs list', 'text_domain' ),
+			'items_list_navigation'      => __( 'Agent IDs list navigation', 'text_domain' ),
+		);
+
+		$args_agent_id    = array(
+			'labels'            => $labels_agent_id,
+			'hierarchical'      => false,
+			'public'            => true,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'show_in_nav_menus' => false,
+			'show_tagcloud'     => true,
+			'rewrite'           => false,
+		);
+
+		$labels_agent  = array(
+			'name'                       => _x( 'Agent', 'Taxonomy General Name', 'text_domain' ),
+			'singular_name'              => _x( 'Agent', 'Taxonomy Singular Name', 'text_domain' ),
+			'menu_name'                  => __( 'Agents', 'text_domain' ),
+			'all_items'                  => __( 'Agents', 'text_domain' ),
+			'parent_item'                => __( 'Parent Agent', 'text_domain' ),
+			'parent_item_colon'          => __( 'Parent Agent:', 'text_domain' ),
+			'new_item_name'              => __( 'New Agent', 'text_domain' ),
+			'add_new_item'               => __( 'Add New Agent', 'text_domain' ),
+			'edit_item'                  => __( 'Edit Agent', 'text_domain' ),
+			'update_item'                => __( 'Update Agent', 'text_domain' ),
+			'view_item'                  => __( 'View Agent', 'text_domain' ),
+			'separate_items_with_commas' => __( 'Separate states with commas', 'text_domain' ),
+			'add_or_remove_items'        => __( 'Add or remove states', 'text_domain' ),
+			'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+			'popular_items'              => __( 'Popular Agents', 'text_domain' ),
+			'search_items'               => __( 'Search Agents', 'text_domain' ),
+			'not_found'                  => __( 'Not Found', 'text_domain' ),
+			'no_terms'                   => __( 'No states', 'text_domain' ),
+			'items_list'                 => __( 'Agents list', 'text_domain' ),
+			'items_list_navigation'      => __( 'Agents list navigation', 'text_domain' ),
+		);
+
+		$args_agent    = array(
+			'labels'            => $labels_agent,
+			'hierarchical'      => false,
+			'public'            => true,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'show_in_nav_menus' => false,
+			'show_tagcloud'     => true,
+			'rewrite'           => false,
+		);
+
+
+		$labels_agency  = array(
+			'name'                       => _x( 'Agency', 'Taxonomy General Name', 'text_domain' ),
+			'singular_name'              => _x( 'Agency', 'Taxonomy Singular Name', 'text_domain' ),
+			'menu_name'                  => __( 'Agencies', 'text_domain' ),
+			'all_items'                  => __( 'Agencies', 'text_domain' ),
+			'parent_item'                => __( 'Parent Agency', 'text_domain' ),
+			'parent_item_colon'          => __( 'Parent Agency:', 'text_domain' ),
+			'new_item_name'              => __( 'New Agency', 'text_domain' ),
+			'add_new_item'               => __( 'Add New Agency', 'text_domain' ),
+			'edit_item'                  => __( 'Edit Agency', 'text_domain' ),
+			'update_item'                => __( 'Update Agency', 'text_domain' ),
+			'view_item'                  => __( 'View Agency', 'text_domain' ),
+			'separate_items_with_commas' => __( 'Separate states with commas', 'text_domain' ),
+			'add_or_remove_items'        => __( 'Add or remove states', 'text_domain' ),
+			'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+			'popular_items'              => __( 'Popular Agencies', 'text_domain' ),
+			'search_items'               => __( 'Search Agencies', 'text_domain' ),
+			'not_found'                  => __( 'Not Found', 'text_domain' ),
+			'no_terms'                   => __( 'No states', 'text_domain' ),
+			'items_list'                 => __( 'Agencies list', 'text_domain' ),
+			'items_list_navigation'      => __( 'Agencies list navigation', 'text_domain' ),
+		);
+
+		$args_agency    = array(
+			'labels'            => $labels_agency,
+			'hierarchical'      => false,
+			'public'            => true,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'show_in_nav_menus' => false,
+			'show_tagcloud'     => true,
+			'rewrite'           => false,
+		);
+
+		// register_taxonomy( 'rcreviews_suburb', array( $post_type_slug ), $args_suburb );
+		// register_taxonomy( 'rcreviews_state', array( $post_type_slug ), $args_state );
+		// register_taxonomy( 'rcreviews_agency_id', array( $post_type_slug ), $args_agency_id );
+		// register_taxonomy( 'rcreviews_agent_id', array( $post_type_slug ), $args_agent_id );
+		register_taxonomy( 'rcreviews_agent_name', array( $post_type_slug ), $args_agent );
+		register_taxonomy( 'rcreviews_agency_name', array( $post_type_slug ), $args_agency );
 	}
 
 	// Move posts from previous custom post type to new custom post type
@@ -722,6 +865,8 @@ class rcreviews_admin {
 			$content      = '';
 			$agent_id     = 0;
 			$agent_name   = '';
+			$agency_id     = 0;
+			$agency_name   = '';
 			$listing_id   = 0;
 			$unique_id    = 0;
 
@@ -748,6 +893,12 @@ class rcreviews_admin {
 				if ( isset( $review['agent']['name'] ) ) {
 					$agent_name = $review['agent']['name'];
 				}
+				if ( isset( $review['agency']['id'] ) ) {
+					$agency_id = $review['agency']['id'];
+				}
+				if ( isset( $review['agency']['name'] ) ) {
+					$agency_name = $review['agency']['name'];
+				}
 				if ( isset( $review['listing']['id'] ) ) {
 					$listing_id = $review['listing']['id'];
 				}
@@ -767,6 +918,8 @@ class rcreviews_admin {
 						'rcreview_reviewer_name'   => $name,
 						'rcreview_agent_id'        => $agent_id,
 						'rcreview_agent_name'      => $agent_name,
+						'rcreview_agency_id'       => $agency_id,
+						'rcreview_agency_name'     => $agency_name,
 						'rcreview_listing_id'      => $listing_id,
 						'rcreview_unique_id'       => $unique_id,
 					),
@@ -787,9 +940,40 @@ class rcreviews_admin {
 
 				if ( ! empty( $posts ) ) {
 					$current_post['ID'] = $posts[0]->ID;
+					$post_id = $posts[0]->ID;
 					wp_update_post( $current_post );
 				} else {
 					wp_insert_post( $current_post );
+					$post_id = get_posts( $args_by_unique_id )[0]->ID;
+				}
+
+				if ( $post_id && ! is_wp_error( $post_id ) && ! empty( $agent_id ) && ! empty( $agent_name ) ) {
+					// Ensure agency_id term exists
+					if ( ! term_exists( (string) $agency_name, 'rcreviews_agency_name' ) ) {
+						wp_insert_term( 
+							(string) $agency_name, 
+							'rcreviews_agency_name',
+							array(
+								'slug' => $agency_id,
+							) 
+						);
+					}
+					// Ensure agent_id term exists
+					if ( ! term_exists( (string) $agent_name, 'rcreviews_agent_name' ) ) {
+						wp_insert_term( 
+							(string) $agent_name, 
+							'rcreviews_agent_name',
+							array(
+								'slug' => $agent_id,
+								'description' => $agency_name,
+							) 
+						);
+					}
+
+					// wp_set_object_terms( $post_id, (string) $agent_id, 'rcreviews_agent_id', false );
+					wp_set_object_terms( $post_id, (string) $agent_name, 'rcreviews_agent_name', false );
+					// wp_set_object_terms( $post_id, (string) $agency_id, 'rcreviews_agency_id', false );
+					wp_set_object_terms( $post_id, (string) $agency_name, 'rcreviews_agency_name', false );
 				}
 
 				++$item_counter;
@@ -880,8 +1064,11 @@ class rcreviews_admin {
 				'max_reviews'             => -1,
 				'shown_reviews'           => 3,
 				'min_stars'               => 5,
+				'agency_id'               => '',
+				'agency_name'             => '',
 				'agent_id'                => '',
 				'agent_name'              => '',
+				'role'              	  => '',
 				'view'                    => 'list',
 				'listing_type'            => 'agent',
 				'class_section'           => '',
@@ -917,6 +1104,53 @@ class rcreviews_admin {
 				'compare' => '>=',
 			),
 		);
+
+		if ( ! empty( $atts['role'] ) ) {
+			$meta_query = array(
+				'relation' => 'AND',
+				array(
+					'key'     => 'rcreview_reviewer_role',
+					'value'   => $atts['role'],
+					'compare' => '==',
+				),
+			);
+		}
+
+		if ( ! empty( $atts['agency_id'] ) && ! empty( $atts['agency_name'] ) ) {
+			$agency_names  = explode( ',', $atts['agency_name'] );
+			$agency_ids    = explode( ',', $atts['agency_id'] );
+			$meta_query[] = array(
+				'relation' => 'OR',
+				array(
+					'key'     => 'rcreview_agency_id',
+					'value'   => $agency_ids,
+					'compare' => 'IN',
+				),
+				array(
+					'key'     => 'rcreview_agency_name',
+					'value'   => $agency_names,
+					'compare' => 'IN',
+				),
+			);
+		} elseif ( ! empty( $atts['agency_id'] ) && empty( $atts['agency_name'] ) ) {
+			$agency_ids    = explode( ',', $atts['agency_id'] );
+			$meta_query[] = array(
+				array(
+					'key'     => 'rcreview_agency_id',
+					'value'   => $agency_ids,
+					'compare' => 'IN',
+				),
+			);
+		} elseif ( ! empty( $atts['agency_name'] ) && empty( $atts['agency_id'] ) ) {
+			$agency_names  = explode( ',', $atts['agency_name'] );
+			$meta_query[] = array(
+				array(
+					'key'     => 'rcreview_agency_name',
+					'value'   => $agency_names,
+					'compare' => 'IN',
+				),
+			);
+		}
 
 		if ( ! empty( $atts['agent_id'] ) && ! empty( $atts['agent_name'] ) ) {
 			$agent_names  = explode( ',', $atts['agent_name'] );
@@ -1177,6 +1411,8 @@ class rcreviews_admin {
 		$content       = $review['content']                    ?? '';
 		$agent_id      = $review['agent']['profileId']         ?? 0;
 		$agent_name    = $review['agent']['name']              ?? '';
+		$agency_id     = $review['agency']['id']          	   ?? 0;
+		$agency_name   = $review['agency']['name']             ?? 0;
 		$listing_id    = $review['listing']['id']              ?? 0;
 	
 		// A unique ID to detect if we already have this review
@@ -1196,6 +1432,8 @@ class rcreviews_admin {
 				'rcreview_reviewer_name'   => $name,
 				'rcreview_agent_id'        => $agent_id,
 				'rcreview_agent_name'      => $agent_name,
+				'rcreview_agency_id'      => $agency_id,
+				'rcreview_agency_name'      => $agency_name,
 				'rcreview_listing_id'      => $listing_id,
 				'rcreview_unique_id'       => $unique_id,
 			),
