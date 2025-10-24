@@ -381,6 +381,33 @@ class rcreviews_admin {
 		// register_taxonomy( 'rcreviews_agent_id', array( $post_type_slug ), $args_agent_id );
 		register_taxonomy( 'rcreviews_agent_name', array( $post_type_slug ), $args_agent );
 		register_taxonomy( 'rcreviews_agency_name', array( $post_type_slug ), $args_agency );
+
+		// Register term meta so we can store a URL for each term and expose to REST API
+        if ( function_exists( 'register_term_meta' ) ) {
+            register_term_meta( 'rcreviews_agent_name',  'rcreview_agent_url',  [
+                'type'         => 'string',
+                'single'       => true,
+                'show_in_rest' => true,
+                'description'  => 'Agent profile URL',
+            ] );
+            register_term_meta( 'rcreviews_agency_name', 'rcreview_agency_url', [
+                'type'         => 'string',
+                'single'       => true,
+                'show_in_rest' => true,
+                'description'  => 'Agency profile URL',
+            ] );
+        }
+
+        // Add admin form fields and save handlers for the taxonomies
+        add_action( 'rcreviews_agent_name_add_form_fields',   [ $this, 'rcreviews_agent_url_add_field' ] );
+        add_action( 'rcreviews_agent_name_edit_form_fields',  [ $this, 'rcreviews_agent_url_edit_field' ], 10, 2 );
+        add_action( 'created_rcreviews_agent_name',          [ $this, 'rcreviews_agent_url_save' ] );
+        add_action( 'edited_rcreviews_agent_name',           [ $this, 'rcreviews_agent_url_save' ] );
+
+        add_action( 'rcreviews_agency_name_add_form_fields',  [ $this, 'rcreviews_agency_url_add_field' ] );
+        add_action( 'rcreviews_agency_name_edit_form_fields', [ $this, 'rcreviews_agency_url_edit_field' ], 10, 2 );
+        add_action( 'created_rcreviews_agency_name',         [ $this, 'rcreviews_agency_url_save' ] );
+        add_action( 'edited_rcreviews_agency_name',          [ $this, 'rcreviews_agency_url_save' ] );
 	}
 
 	// Move posts from previous custom post type to new custom post type
@@ -865,8 +892,10 @@ class rcreviews_admin {
 			$content      = '';
 			$agent_id     = 0;
 			$agent_name   = '';
+			$agent_url     = 0;
 			$agency_id     = 0;
 			$agency_name   = '';
+			$agency_url   = '';
 			$listing_id   = 0;
 			$unique_id    = 0;
 
@@ -893,11 +922,17 @@ class rcreviews_admin {
 				if ( isset( $review['agent']['name'] ) ) {
 					$agent_name = $review['agent']['name'];
 				}
+				if ( isset( $review['agent']['_links']['self']['href'] ) ) {
+					$agent_url = $review['agent']['_links']['self']['href'];
+				}
 				if ( isset( $review['agency']['id'] ) ) {
 					$agency_id = $review['agency']['id'];
 				}
 				if ( isset( $review['agency']['name'] ) ) {
 					$agency_name = $review['agency']['name'];
+				}
+				if ( isset( $review['agency']['_links']['self']['href'] ) ) {
+					$agency_url = $review['agency']['_links']['self']['href'];
 				}
 				if ( isset( $review['listing']['id'] ) ) {
 					$listing_id = $review['listing']['id'];
@@ -918,8 +953,10 @@ class rcreviews_admin {
 						'rcreview_reviewer_name'   => $name,
 						'rcreview_agent_id'        => $agent_id,
 						'rcreview_agent_name'      => $agent_name,
+						'rcreview_agent_url'      => $agent_url,
 						'rcreview_agency_id'       => $agency_id,
 						'rcreview_agency_name'     => $agency_name,
+						'rcreview_agency_url'     => $agency_url,
 						'rcreview_listing_id'      => $listing_id,
 						'rcreview_unique_id'       => $unique_id,
 					),
@@ -948,26 +985,42 @@ class rcreviews_admin {
 				}
 
 				if ( $post_id && ! is_wp_error( $post_id ) && ! empty( $agent_id ) && ! empty( $agent_name ) ) {
-					// Ensure agency_id term exists
-					if ( ! term_exists( (string) $agency_name, 'rcreviews_agency_name' ) ) {
-						wp_insert_term( 
-							(string) $agency_name, 
+					// Ensure agency term exists and save agency URL as term meta
+					$agency_term = term_exists( (string) $agency_name, 'rcreviews_agency_name' );
+					if ( $agency_term === 0 || $agency_term === null ) {
+						$res = wp_insert_term(
+							(string) $agency_name,
 							'rcreviews_agency_name',
-							array(
+							[
 								'slug' => $agency_id,
-							) 
+								'description' => '',
+							]
 						);
+						if ( ! is_wp_error( $res ) && isset( $res['term_id'] ) ) {
+							update_term_meta( (int) $res['term_id'], 'rcreview_agency_url', esc_url_raw( $agency_url ) );
+						}
+					} else {
+						$term_id = is_array( $agency_term ) ? (int) $agency_term['term_id'] : (int) $agency_term;
+						update_term_meta( $term_id, 'rcreview_agency_url', esc_url_raw( $agency_url ) );
 					}
-					// Ensure agent_id term exists
-					if ( ! term_exists( (string) $agent_name, 'rcreviews_agent_name' ) ) {
-						wp_insert_term( 
-							(string) $agent_name, 
+
+					// Ensure agent term exists and save agent URL + description
+					$agent_term = term_exists( (string) $agent_name, 'rcreviews_agent_name' );
+					if ( $agent_term === 0 || $agent_term === null ) {
+						$res = wp_insert_term(
+							(string) $agent_name,
 							'rcreviews_agent_name',
-							array(
-								'slug' => $agent_id,
+							[
+								'slug'        => $agent_id,
 								'description' => $agency_name,
-							) 
+							]
 						);
+						if ( ! is_wp_error( $res ) && isset( $res['term_id'] ) ) {
+							update_term_meta( (int) $res['term_id'], 'rcreview_agent_url', esc_url_raw( $agent_url ) );
+						}
+					} else {
+						$term_id = is_array( $agent_term ) ? (int) $agent_term['term_id'] : (int) $agent_term;
+						update_term_meta( $term_id, 'rcreview_agent_url', esc_url_raw( $agent_url ) );
 					}
 
 					// wp_set_object_terms( $post_id, (string) $agent_id, 'rcreviews_agent_id', false );
@@ -1070,6 +1123,8 @@ class rcreviews_admin {
 				'agent_name'              => '',
 				'role'              	  => '',
 				'view'                    => 'list',
+				'read_more'               => '',
+				'read_more_text'          => 'Read more of our reviews on',
 				'listing_type'            => 'agent',
 				'class_section'           => '',
 				'class_container'         => 'container',
@@ -1091,6 +1146,10 @@ class rcreviews_admin {
 				'class_btn_wrapper'       => 'd-flex justify-content-center',
 				'class_btn'               => 'btn btn-outline-dark fw-semibold py-3 px-4',
 				'class_no_results'        => '',
+				'class_read_more_wrapper' => 'd-flex align-content-center justify-content-center min-h-42 fs-3 mt-4 mb-3',
+				'class_read_more_link'    => 'text-dark d-flex flex-column flex-sm-row align-items-center rg-16 text-center text-decoration-none mx-auto',
+				'class_read_more_img'     => 'img-fluid ms-0 ms-md-2',
+				'class_read_more_icon'    => 'text-dark bi bi-box-arrow-up-right',
 			),
 			$atts,
 			'rcreviews'
@@ -1222,6 +1281,9 @@ class rcreviews_admin {
 
 		if ( $query->have_posts() ) {
 
+
+			$rea   = file_get_contents( plugin_dir_path( __FILE__ ) . '../assets/images/realestatecomau.svg' );
+
 			$output .= '<section class="rcreviews--section' . rcreviews_check_class( $atts['class_section'], $atts['view'] ) . ' rcreviews--listing-type-' . $atts['listing_type'] . '">';
 			$output .= '<div class="rcreviews--container' . rcreviews_check_class( $atts['class_container'], $atts['view'] ) . '"> ';
 			$output .= '<div class="rcreviews--row' . rcreviews_check_class( $atts['class_row'], $atts['view'] ) . '">';
@@ -1296,12 +1358,53 @@ class rcreviews_admin {
 					$output .= '</div>';
 				}
 			} elseif ( $query->found_posts > $atts['shown_reviews'] ) {
-					$output .= '<div class="rcreviews--btn-wrapper' . rcreviews_check_class( $atts['class_btn_wrapper'], $atts['view'] ) . '">';
-					$output .= '<button class="rcreviews--btn' . rcreviews_check_class( $atts['class_btn'], $atts['view'] ) . '"><span class="rcreviews--label">Show</span> <span class="rcreviews--count">' . $query->found_posts - $atts['shown_reviews'] . '</span> reviews</button>';
-					$output .= '</div>';
+				$output .= '<div class="rcreviews--btn-wrapper' . rcreviews_check_class( $atts['class_btn_wrapper'], $atts['view'] ) . '">';
+				$output .= '<button class="rcreviews--btn' . rcreviews_check_class( $atts['class_btn'], $atts['view'] ) . '"><span class="rcreviews--label">Show</span> <span class="rcreviews--count">' . $query->found_posts - $atts['shown_reviews'] . '</span> reviews</button>';
+				$output .= '</div>';
 			}
 			$output .= '</div>';
 			$output .= '</section>';
+
+			$read_more_url = '';
+
+			if ( ! empty( $atts['read_more'] ) ) {
+				if ( $atts['read_more'] == 'agency' && ! empty($atts['agency_id'])  ) {
+					$agency_name = $atts['agency_id'];
+					$term = get_term_by( 'slug', $agency_name, 'rcreviews_agency_name' );
+
+					if ( $term && ! is_wp_error( $term ) ) {
+						$term_url = get_term_meta( $term->term_id, 'rcreview_agency_url', true );
+						if ( $term_url ) {
+							$read_more_url = esc_url( $term_url );
+						} 
+					}
+				} elseif ( $atts['read_more'] == 'agent' &&  ! empty($atts['agent_name']) ) {
+					$agent_name = $atts['agent_name'];
+					$term = get_term_by( 'name', $agent_name, 'rcreviews_agent_name' );
+
+					if ( $term && ! is_wp_error( $term ) ) {
+						$term_url = get_term_meta( $term->term_id, 'rcreview_agent_url', true );
+						if ( $term_url ) {
+							$read_more_url = esc_url( $term_url );
+						}
+					}
+				} else {
+					$read_more_url = $atts['read_more'];
+				}
+
+				if ( $read_more_url ) {
+					$output .= 
+					'<div class="'. rcreviews_check_class( $atts['class_read_more_wrapper'], $atts['view'] ) .'">
+						<a href="' . $read_more_url . '" target="_blank" class="' . $atts['class_read_more_link'] . '">
+							<span>' . $atts['read_more_text'] . '</span>
+							<span>
+								<span class="' . $atts['class_read_more_img'] . '">' . $rea . '</span>
+								<i class="' . $atts['class_read_more_icon'] . '"></i>
+							</span>
+						</a>
+					</div>';
+				}
+			}
 
 			// Restore original Post Data
 			wp_reset_postdata();
@@ -1407,13 +1510,15 @@ class rcreviews_admin {
 		$name          = isset( $review['reviewer']['name'] ) 
 							? ucfirst( $review['reviewer']['name'] ) 
 							: '';
-		$created_date  = $review['createdDate']                ?? '';
-		$content       = $review['content']                    ?? '';
-		$agent_id      = $review['agent']['profileId']         ?? 0;
-		$agent_name    = $review['agent']['name']              ?? '';
-		$agency_id     = $review['agency']['id']          	   ?? 0;
-		$agency_name   = $review['agency']['name']             ?? 0;
-		$listing_id    = $review['listing']['id']              ?? 0;
+		$created_date  = $review['createdDate'] ?? '';
+		$content       = $review['content'] ?? '';
+		$agent_id      = $review['agent']['profileId'] ?? 0;
+		$agent_name    = $review['agent']['name'] ?? '';
+		$agent_url    = $review['agent']['_links']['self']['href'] ?? '';
+		$agency_id     = $review['agency']['id'] ?? 0;
+		$agency_name   = $review['agency']['name'] ?? 0;
+		$agency_url   = $review['agency']['_links']['self']['href'] ?? 0;
+		$listing_id    = $review['listing']['id'] ?? 0;
 	
 		// A unique ID to detect if we already have this review
 		$created_ts = $created_date ? strtotime( $created_date ) : '';
@@ -1432,8 +1537,10 @@ class rcreviews_admin {
 				'rcreview_reviewer_name'   => $name,
 				'rcreview_agent_id'        => $agent_id,
 				'rcreview_agent_name'      => $agent_name,
+				'rcreview_agent_url'      => $agent_url,
 				'rcreview_agency_id'      => $agency_id,
 				'rcreview_agency_name'      => $agency_name,
+				'rcreview_agency_url'      => $agency_url,
 				'rcreview_listing_id'      => $listing_id,
 				'rcreview_unique_id'       => $unique_id,
 			),
@@ -1480,4 +1587,95 @@ class rcreviews_admin {
 		
 		wp_schedule_event( time(), 'rcreviews_interval', 'rcreviews_cron_hook' );
 	}
+
+    /**
+     * Render "Agent URL" field on Add Term screen.
+     */
+    public function rcreviews_agent_url_add_field() {
+        ?>
+        <div class="form-field term-group">
+            <label for="rcreview_agent_url"><?php esc_html_e( 'Agent URL', 'text_domain' ); ?></label>
+            <input name="rcreview_agent_url" id="rcreview_agent_url" type="url" value="" />
+            <p class="description"><?php esc_html_e( 'Link to the Agent Profile.', 'text_domain' ); ?></p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render "Agent URL" field on Edit Term screen.
+     *
+     * @param WP_Term $term
+     * @param string  $taxonomy
+     */
+    public function rcreviews_agent_url_edit_field( $term, $taxonomy ) {
+        $value = get_term_meta( $term->term_id, 'rcreview_agent_url', true );
+        ?>
+        <tr class="form-field term-group-wrap">
+            <th scope="row"><label for="rcreview_agent_url"><?php esc_html_e( 'Agent URL', 'text_domain' ); ?></label></th>
+            <td>
+                <input name="rcreview_agent_url" id="rcreview_agent_url" type="url" value="<?php echo esc_attr( $value ); ?>" />
+                <p class="description"><?php esc_html_e( 'Link to the Agent Profile.', 'text_domain' ); ?></p>
+            </td>
+        </tr>
+        <?php
+    }
+
+    /**
+     * Render "Agency URL" field on Add Term screen.
+     */
+    public function rcreviews_agency_url_add_field() {
+        ?>
+        <div class="form-field term-group">
+            <label for="rcreview_agency_url"><?php esc_html_e( 'Agency URL', 'text_domain' ); ?></label>
+            <input name="rcreview_agency_url" id="rcreview_agency_url" type="url" value="" />
+            <p class="description"><?php esc_html_e( 'Link to the Agency Profile.', 'text_domain' ); ?></p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render "Agency URL" field on Edit Term screen.
+     *
+     * @param WP_Term $term
+     * @param string  $taxonomy
+     */
+    public function rcreviews_agency_url_edit_field( $term, $taxonomy ) {
+        $value = get_term_meta( $term->term_id, 'rcreview_agency_url', true );
+        ?>
+        <tr class="form-field term-group-wrap">
+            <th scope="row"><label for="rcreview_agency_url"><?php esc_html_e( 'Agency URL', 'text_domain' ); ?></label></th>
+            <td>
+                <input name="rcreview_agency_url" id="rcreview_agency_url" type="url" value="<?php echo esc_attr( $value ); ?>" />
+                <p class="description"><?php esc_html_e( 'Link to the Agency Profile.', 'text_domain' ); ?></p>
+            </td>
+        </tr>
+        <?php
+    }
+
+    /**
+     * Save term meta for both agent and agency.
+     *
+     * @param int $term_id
+     */
+    public function rcreviews_agent_url_save( $term_id ) {
+        // Agent URL
+        if ( isset( $_POST['rcreview_agent_url'] ) ) {
+            $val = esc_url_raw( wp_unslash( $_POST['rcreview_agent_url'] ) );
+            if ( $val ) {
+                update_term_meta( $term_id, 'rcreview_agent_url', $val );
+            } else {
+                delete_term_meta( $term_id, 'rcreview_agent_url' );
+            }
+        }
+
+        // Agency URL
+        if ( isset( $_POST['rcreview_agency_url'] ) ) {
+            $val = esc_url_raw( wp_unslash( $_POST['rcreview_agency_url'] ) );
+            if ( $val ) {
+                update_term_meta( $term_id, 'rcreview_agency_url', $val );
+            } else {
+                delete_term_meta( $term_id, 'rcreview_agency_url' );
+            }
+        }
+    }
 }
