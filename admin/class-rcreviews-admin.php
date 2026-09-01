@@ -1256,37 +1256,15 @@ class rcreviews_admin {
 
 		$query = new WP_Query( $args );
 
-		function rcreviews_rating( $rating ) {
-			$star   = file_get_contents( plugin_dir_path( __FILE__ ) . '../assets/images/star.svg' );
-			$output = '';
-
-			$rating = intval( $rating );
-			for ( $i = 0; $i < $rating; $i++ ) {
-				$output .= $star;
-			}
-			return $output;
-		}
-		function rcreviews_check_class( $string, $view ) {
-
-			if ( 'unstyled' != $view ) {
-				if ( '' != $string ) {
-					return ' ' . $string;
-				} else {
-					return '';
-				}
-			} else {
-				return '';
-			}
-		}
 
 		if ( $query->have_posts() ) {
 
 
 			$rea   = file_get_contents( plugin_dir_path( __FILE__ ) . '../assets/images/realestatecomau.svg' );
 
-			$output .= '<section class="rcreviews--section' . rcreviews_check_class( $atts['class_section'], $atts['view'] ) . ' rcreviews--listing-type-' . $atts['listing_type'] . '">';
-			$output .= '<div class="rcreviews--container' . rcreviews_check_class( $atts['class_container'], $atts['view'] ) . '"> ';
-			$output .= '<div class="rcreviews--row' . rcreviews_check_class( $atts['class_row'], $atts['view'] ) . '">';
+			$output .= '<section class="rcreviews--section' . $this->rcreviews_check_class( $atts['class_section'], $atts['view'] ) . ' rcreviews--listing-type-' . $atts['listing_type'] . '">';
+			$output .= '<div class="rcreviews--container' . $this->rcreviews_check_class( $atts['class_container'], $atts['view'] ) . '"> ';
+			$output .= '<div class="rcreviews--row' . $this->rcreviews_check_class( $atts['class_row'], $atts['view'] ) . '">';
 
 			while ( $query->have_posts() ) {
 				$query->the_post();
@@ -1297,24 +1275,24 @@ class rcreviews_admin {
 					$class_visibility = ' rcreviews--hidden-review d-none';
 				}
 
-				$output .= '<article class="rcreviews--article col' . $class_visibility . rcreviews_check_class( $atts['class_article'], $atts['view'] ) . '" id="rcreviews-' . get_the_ID() . '" data-agent-id="' . get_post_meta( get_the_ID(), 'rcreview_agent_id', true ) . '">';
-				$output .= '<div class="rcreviews--card' . rcreviews_check_class( $atts['class_card'], $atts['view'] ) . '">';
-				$output .= '<div class="rcreviews--inner-row' . rcreviews_check_class( $atts['class_inner_row'], $atts['view'] ) . '">';
-				$output .= '<div class="rcreviews--rating' . rcreviews_check_class( $atts['class_rating'], $atts['view'] ) . '">';
-				$output .= '<div class="rcreviews--rating-stars' . rcreviews_check_class( $atts['class_rating_stars'], $atts['view'] ) . '">' . rcreviews_rating( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ) ) . '</div>';
-				$output .= '<div class="rcreviews-rating-number' . rcreviews_check_class( $atts['class_rating_number'], $atts['view'] ) . '">' . number_format( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ), 1 ) . '</div>';
+				$output .= '<article class="rcreviews--article col' . $class_visibility . $this->rcreviews_check_class( $atts['class_article'], $atts['view'] ) . '" id="rcreviews-' . get_the_ID() . '" data-agent-id="' . get_post_meta( get_the_ID(), 'rcreview_agent_id', true ) . '">';
+				$output .= '<div class="rcreviews--card' . $this->rcreviews_check_class( $atts['class_card'], $atts['view'] ) . '">';
+				$output .= '<div class="rcreviews--inner-row' . $this->rcreviews_check_class( $atts['class_inner_row'], $atts['view'] ) . '">';
+				$output .= '<div class="rcreviews--rating' . $this->rcreviews_check_class( $atts['class_rating'], $atts['view'] ) . '">';
+				$output .= '<div class="rcreviews--rating-stars' . $this->rcreviews_check_class( $atts['class_rating_stars'], $atts['view'] ) . '">' . $this->rcreviews_rating( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ) ) . '</div>';
+				$output .= '<div class="rcreviews-rating-number' . $this->rcreviews_check_class( $atts['class_rating_number'], $atts['view'] ) . '">' . number_format( get_post_meta( get_the_ID(), 'rcreview_reviewer_rating', true ), 1 ) . '</div>';
 				$output .= '</div>';
-				$output .= '<div class="rcreviews--badge' . rcreviews_check_class( $atts['class_badge'], $atts['view'] ) . '">' . $badge . 'Verified review</div>';
+				$output .= '<div class="rcreviews--badge' . $this->rcreviews_check_class( $atts['class_badge'], $atts['view'] ) . '">' . $badge . 'Verified review</div>';
 				$output .= '</div>';
-				$output .= '<div class="rcreviews--title' . rcreviews_check_class( $atts['class_title'], $atts['view'] ) . '"><strong>' . get_the_title() . '</strong></div>';
-				$output .= '<div class="rcreviews--date' . rcreviews_check_class( $atts['class_date'], $atts['view'] ) . '"><small>' . human_time_diff( get_the_time( 'U' ), current_time( 'timestamp' ) ) . ' ago</small></div>';
-				$output .= '<div class="rcreviews--content' . rcreviews_check_class( $atts['class_content'], $atts['view'] ) . '">' . get_the_content() . '</div>';
+				$output .= '<div class="rcreviews--title' . $this->rcreviews_check_class( $atts['class_title'], $atts['view'] ) . '"><strong>' . get_the_title() . '</strong></div>';
+				$output .= '<div class="rcreviews--date' . $this->rcreviews_check_class( $atts['class_date'], $atts['view'] ) . '"><small>' . human_time_diff( get_the_time( 'U' ), current_time( 'timestamp' ) ) . ' ago</small></div>';
+				$output .= '<div class="rcreviews--content' . $this->rcreviews_check_class( $atts['class_content'], $atts['view'] ) . '">' . get_the_content() . '</div>';
 
 				if ( 'agency' == $atts['listing_type'] ) {
 					$agent_name = '';
 					$agent_img  = '';
 
-					$output .= '<div class="rcreviews--agent' . rcreviews_check_class( $atts['class_agent'], $atts['view'] ) . '">';
+					$output .= '<div class="rcreviews--agent' . $this->rcreviews_check_class( $atts['class_agent'], $atts['view'] ) . '">';
 
 					$users = get_users(
 						array(
@@ -1336,12 +1314,12 @@ class rcreviews_admin {
 					}
 
 					if ( $agent_img ) {
-						$output .= '<span class="rcreviews--agent-img-wrapper' . rcreviews_check_class( $atts['class_agent_img-wrapper'], $atts['view'] ) . '">';
-						$output .= '<img class="rcreviews--agent-img' . rcreviews_check_class( $atts['class_agent_img-wrapper'], $atts['view'] ) . '" src="' . $agent_img . '" width="24" width="24">';
+						$output .= '<span class="rcreviews--agent-img-wrapper' . $this->rcreviews_check_class( $atts['class_agent_img-wrapper'], $atts['view'] ) . '">';
+						$output .= '<img class="rcreviews--agent-img' . $this->rcreviews_check_class( $atts['class_agent_img-wrapper'], $atts['view'] ) . '" src="' . $agent_img . '" width="24" width="24">';
 						$output .= '</span>';
 					}
 
-					$output .= '<span class="rcreviews--agent-name' . rcreviews_check_class( $atts['class_agent_name'], $atts['view'] ) . '">' . $agent_name . '</span>';
+					$output .= '<span class="rcreviews--agent-name' . $this->rcreviews_check_class( $atts['class_agent_name'], $atts['view'] ) . '">' . $agent_name . '</span>';
 					$output .= '</div>';
 				}
 
@@ -1353,13 +1331,13 @@ class rcreviews_admin {
 
 			if ( ! empty( $atts['max_reviews'] ) && $atts['max_reviews'] > 0 ) {
 				if ( $atts['max_reviews'] > $atts['shown_reviews'] ) {
-					$output .= '<div class="rcreviews--btn-wrapper' . rcreviews_check_class( $atts['class_btn_wrapper'], $atts['view'] ) . '">';
-					$output .= '<button class="rcreviews--btn' . rcreviews_check_class( $atts['class_btn'], $atts['view'] ) . '"><span class="rcreviews--label">Show</span> <span class="rcreviews--count">' . $atts['max_reviews'] - $atts['shown_reviews'] . '</span> reviews</button>';
+					$output .= '<div class="rcreviews--btn-wrapper' . $this->rcreviews_check_class( $atts['class_btn_wrapper'], $atts['view'] ) . '">';
+					$output .= '<button class="rcreviews--btn' . $this->rcreviews_check_class( $atts['class_btn'], $atts['view'] ) . '"><span class="rcreviews--label">Show</span> <span class="rcreviews--count">' . $atts['max_reviews'] - $atts['shown_reviews'] . '</span> reviews</button>';
 					$output .= '</div>';
 				}
 			} elseif ( $query->found_posts > $atts['shown_reviews'] ) {
-				$output .= '<div class="rcreviews--btn-wrapper' . rcreviews_check_class( $atts['class_btn_wrapper'], $atts['view'] ) . '">';
-				$output .= '<button class="rcreviews--btn' . rcreviews_check_class( $atts['class_btn'], $atts['view'] ) . '"><span class="rcreviews--label">Show</span> <span class="rcreviews--count">' . $query->found_posts - $atts['shown_reviews'] . '</span> reviews</button>';
+				$output .= '<div class="rcreviews--btn-wrapper' . $this->rcreviews_check_class( $atts['class_btn_wrapper'], $atts['view'] ) . '">';
+				$output .= '<button class="rcreviews--btn' . $this->rcreviews_check_class( $atts['class_btn'], $atts['view'] ) . '"><span class="rcreviews--label">Show</span> <span class="rcreviews--count">' . $query->found_posts - $atts['shown_reviews'] . '</span> reviews</button>';
 				$output .= '</div>';
 			}
 			$output .= '</div>';
@@ -1394,7 +1372,7 @@ class rcreviews_admin {
 
 				if ( $read_more_url ) {
 					$output .= 
-					'<div class="'. rcreviews_check_class( $atts['class_read_more_wrapper'], $atts['view'] ) .'">
+					'<div class="'. $this->rcreviews_check_class( $atts['class_read_more_wrapper'], $atts['view'] ) .'">
 						<a href="' . $read_more_url . '" target="_blank" class="' . $atts['class_read_more_link'] . '">
 							<span>' . $atts['read_more_text'] . '</span>
 							<span>
@@ -1410,7 +1388,7 @@ class rcreviews_admin {
 			wp_reset_postdata();
 		} else {
 			// No posts found
-			$output .= '<div class="rcreviews--no-results' . rcreviews_check_class( $atts['class_no_results'], $atts['view'] ) . '">';
+			$output .= '<div class="rcreviews--no-results' . $this->rcreviews_check_class( $atts['class_no_results'], $atts['view'] ) . '">';
 			$output .= 'No reviews found.';
 			$output .= '</div>';
 		}
@@ -1418,6 +1396,30 @@ class rcreviews_admin {
 		return $output;
 	}
 
+
+	public function rcreviews_rating( $rating ) {
+		$star   = file_get_contents( plugin_dir_path( __FILE__ ) . '../assets/images/star.svg' );
+		$output = '';
+
+		$rating = intval( $rating );
+		for ( $i = 0; $i < $rating; $i++ ) {
+			$output .= $star;
+		}
+		return $output;
+	}
+	public function rcreviews_check_class( $string, $view ) {
+
+		if ( 'unstyled' != $view ) {
+			if ( '' != $string ) {
+				return ' ' . $string;
+			} else {
+				return '';
+			}
+		} else {
+			return '';
+		}
+	}
+		
 	public function rcreviews_cron_exec(): void
 	{
 		$this->refresh_access_token_if_needed();
